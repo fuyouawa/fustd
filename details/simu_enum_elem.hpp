@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <type_traits>
 
 #define KRNLIB_SIMU_ENUM_ELEM(name) \
