@@ -29,13 +29,13 @@ public:
 	 * @param rvalue 右值
 	*/
 	template<class T1>
-	Result(krnlib::Ok<T1>&& rvalue) : ok_(std::move(rvalue)) { tag_ = kOkTag; }
+	Result(Ok<T1>&& rvalue) : ok_(std::move(rvalue)) { tag_ = kOkTag; }
 	/**
 	 * @brief 接收Ok, 表示有错误
 	 * @param rvalue 右值
 	*/
 	template<class E1>
-	Result(krnlib::Err<E1>&& rvalue) : err_(std::move(rvalue)) { tag_ = kErrTag; }
+	Result(Err<E1>&& rvalue) : err_(std::move(rvalue)) { tag_ = kErrTag; }
 	~Result() {
 		if (IsOk())
 			ok_.~Ok();

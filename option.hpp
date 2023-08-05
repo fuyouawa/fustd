@@ -25,7 +25,7 @@ public:
 	 * @param rvalue 右值
 	*/
 	template<class T1>
-	Option(krnlib::Some<T1>&& rvalue) : some_(std::move(rvalue)) { tag_ = kSomeTag; }
+	Option(Some<T1>&& rvalue) : some_(std::move(rvalue)) { tag_ = kSomeTag; }
 	/**
 	 * @brief 接收None, 表示空
 	*/
