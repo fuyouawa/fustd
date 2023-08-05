@@ -10,4 +10,4 @@
 
 我们欢迎所有C++开发者使用和提升这个项目！
 
-## ->[API文档](https://github.com/fuyouawa/fystd/wiki/document)https://github.com/fuyouawa/fystd/wiki/document
+## ->[API文档](https://github.com/fuyouawa/fystd/wiki/document)
