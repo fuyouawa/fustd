@@ -16,9 +16,6 @@ template<class T, class E>
 class Result
 {
 public:
-	using Ok = Ok<T>;
-	using Err = Err<E>;
-
 	enum Tag {
 		kOkTag,
 		kErrTag
@@ -119,8 +116,8 @@ public:
 private:
 	char tag_;
 	union {
-		Ok ok_;
-		Err err_;
+		Ok<T> ok_;
+		Err<T> err_;
 	};
 };
 }

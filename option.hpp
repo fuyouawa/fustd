@@ -14,8 +14,6 @@ template<class T>
 class Option
 {
 public:
-	using Some = Some<T>;
-
 	enum Tag {
 		kSomeTag,
 		kNoneTag
@@ -71,7 +69,7 @@ public:
 private:
 	char tag_;
 	union {
-		Some some_;
+		Some<T> some_;
 	};
 };
 }
