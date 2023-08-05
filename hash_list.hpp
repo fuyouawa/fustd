@@ -32,12 +32,11 @@ struct DefaultTypeInfoGetter {
 };
 }
 
-template<class TypeInfoGetter=details::DefaultTypeInfoGetter>
 class HashList
 {
 public:
-	using TDeleter = std::function<void(void*)>;
-	using Container = std::unordered_map<details::TypeInfoWrapper, std::pair<void*, TDeleter>, details::TypeInfoWrapperHasher, details::TypeInfoWrapperEqualTo>;
+	using BindDeleterValueT = std::pair<void*, void(*)(void*)>;
+	using Container = std::unordered_map<details::TypeInfoWrapper, BindDeleterValueT, details::TypeInfoWrapperHasher, details::TypeInfoWrapperEqualTo>;
 	using ContainerIterator = typename Container::iterator;
 
 	//class Iterator {
@@ -71,7 +70,7 @@ public:
 	//	ContainerIterator iter_;
 	//};
 
-	HashList(): typeinfo_getter_(), container_() {}
+	HashList(): container_() {}
 	template<class... Types>
 	HashList(Types*... args) {
 		(Insert(args), ...);
@@ -139,18 +138,16 @@ public:
 
 private:
 	template<class T>
-	const std::type_info& GetType() const noexcept {
-		return typeinfo_getter_((T*)0);
+	static constexpr const std::type_info& GetType() noexcept {
+		return typeid(T);
 	}
 
-	void DeleteValue(std::pair<void*, TDeleter>& x) {
+	void DeleteValue(BindDeleterValueT& x) {
 		if (x.first) {
 			x.second(x.first);
 		}
 		x.first = nullptr;
 	}
-
-	TypeInfoGetter typeinfo_getter_;
 	Container container_;
 };
 }
