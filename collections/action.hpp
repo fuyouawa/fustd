@@ -1,9 +1,9 @@
-#pragma once
+﻿#pragma once
 #include <unordered_set>
 #include <functional>
 #include <typeinfo>
 
-namespace easyfwk {
+namespace fustd {
 namespace details {
 struct FunctionHasher {
 	template<class... ArgsT>
