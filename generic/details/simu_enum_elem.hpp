@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include <type_traits>
 
-#define KRNLIB_SIMU_ENUM_ELEM(name) \
+#define FUSTD_SIMU_ENUM_ELEM(name) \
 template <class T> \
 class name \
 { \
@@ -15,9 +15,3 @@ public: \
 	~name() {} \
 	T val_; \
 };
-
-
-namespace krnlib {
-namespace details {
-}
-}

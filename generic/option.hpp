@@ -1,9 +1,8 @@
 ﻿#pragma once
-#include <fystd/details/simu_enum_elem.hpp>
+#include <fustd/generic/details/simu_enum_elem.hpp>
 
-namespace fystd {
-
-KRNLIB_SIMU_ENUM_ELEM(Some)
+namespace fustd {
+FUSTD_SIMU_ENUM_ELEM(Some)
 struct None {};
 
 /**

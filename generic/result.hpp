@@ -1,11 +1,11 @@
 ﻿#pragma once
-#include <fystd/details/simu_enum_elem.hpp>
+#include <fustd/generic/details/simu_enum_elem.hpp>
 #include <stdexcept>
 
-namespace fystd {
+namespace fustd {
 
-KRNLIB_SIMU_ENUM_ELEM(Ok)
-KRNLIB_SIMU_ENUM_ELEM(Err)
+FUSTD_SIMU_ENUM_ELEM(Ok)
+FUSTD_SIMU_ENUM_ELEM(Err)
 
 /**
  * @brief 抽象可恢复错误概念, Result表示可恢复错误类型, Ok表示成功, Err表示错误
