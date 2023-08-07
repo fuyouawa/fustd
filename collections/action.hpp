@@ -28,26 +28,28 @@ template<class... ArgsT>
 class Action
 {
 public:
-	using FuncT = std::function<void(ArgsT...)>;
-
 	Action() {}
-	Action(const FuncT& func) {
-		AddFunc(func);
+	template<class FuncT>
+	Action(FuncT&& func) {
+		AddFunc(std::forward<FuncT>(func));
 	}
-	Action& operator=(const FuncT& func) {
+	template<class FuncT>
+	Action& operator=(FuncT&& func) {
 		func_set_.clear();
-		AddFunc(func);
+		AddFunc(std::forward<FuncT>(func));
 		return *this;
 	}
 	~Action() {}
 
-	Action& operator+=(const FuncT& func) {
-		AddFunc(func);
+	template<class FuncT>
+	Action& operator+=(FuncT&& func) {
+		AddFunc(std::forward<FuncT>(func));
 		return *this;
 	}
 
-	Action& operator-=(const FuncT& func) {
-		RemoveFunc(func);
+	template<class FuncT>
+	Action& operator-=(FuncT&& func) {
+		RemoveFunc(std::forward<FuncT>(func));
 		return *this;
 	}
 
@@ -58,11 +60,13 @@ public:
 	}
 
 private:
-	void AddFunc(const FuncT& func) {
-		func_set_.insert(func);
+	template<class FuncT>
+	void AddFunc(FuncT&& func) {
+		func_set_.insert(std::forward<FuncT>(func));
 	}
-	void RemoveFunc(const FuncT& func) {
-		func_set_.erase(func);
+	template<class FuncT>
+	void RemoveFunc(FuncT&& func) {
+		func_set_.erase(std::forward<FuncT>(func));
 	}
 
 	details::function_set<ArgsT...> func_set_;
