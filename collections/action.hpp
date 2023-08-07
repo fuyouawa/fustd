@@ -3,6 +3,8 @@
 #include <functional>
 #include <typeinfo>
 
+#include <fustd/generic/function_traits.hpp>
+
 namespace fustd {
 namespace details {
 struct FunctionHasher {
@@ -28,12 +30,15 @@ template<class... ArgsT>
 class Action
 {
 public:
+	template<class FuncT>
+	using enable_if_same_args = std::enable_if_t<is_all_same_args_func_v<FuncT, void(ArgsT...)>, int>;
+
 	Action() {}
 	template<class FuncT>
-	Action(FuncT&& func) {
+	Action(FuncT&& func, enable_if_same_args<FuncT> = 0) {
 		AddFunc(std::forward<FuncT>(func));
 	}
-	template<class FuncT>
+	template<class FuncT, enable_if_same_args<FuncT> = 0>
 	Action& operator=(FuncT&& func) {
 		func_set_.clear();
 		AddFunc(std::forward<FuncT>(func));
@@ -41,13 +46,13 @@ public:
 	}
 	~Action() {}
 
-	template<class FuncT>
+	template<class FuncT, enable_if_same_args<FuncT> = 0>
 	Action& operator+=(FuncT&& func) {
 		AddFunc(std::forward<FuncT>(func));
 		return *this;
 	}
 
-	template<class FuncT>
+	template<class FuncT, enable_if_same_args<FuncT> = 0>
 	Action& operator-=(FuncT&& func) {
 		RemoveFunc(std::forward<FuncT>(func));
 		return *this;
@@ -60,11 +65,11 @@ public:
 	}
 
 private:
-	template<class FuncT>
+	template<class FuncT, enable_if_same_args<FuncT> = 0>
 	void AddFunc(FuncT&& func) {
 		func_set_.insert(std::forward<FuncT>(func));
 	}
-	template<class FuncT>
+	template<class FuncT, enable_if_same_args<FuncT> = 0>
 	void RemoveFunc(FuncT&& func) {
 		func_set_.erase(std::forward<FuncT>(func));
 	}
