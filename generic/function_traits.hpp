@@ -9,7 +9,7 @@ template<class RetT, class... ArgsT>
 struct FunctionTraits<RetT(ArgsT...)> {
 	using ReturnT = RetT;
 	using Arguments = std::tuple<ArgsT...>;
-	using Function = RetT(*)(ArgsT...);
+	using FunctionT = RetT(*)(ArgsT...);
 
 	static constexpr size_t kArgumentCount = sizeof...(ArgsT);
 	static constexpr bool kIsMemberFunction = false;
@@ -22,7 +22,7 @@ template<class RetT, class... ArgsT>
 struct FunctionTraits<RetT(*)(ArgsT...)> {
 	using ReturnT = RetT;
 	using Arguments = std::tuple<ArgsT...>;
-	using Function = RetT(*)(ArgsT...);
+	using FunctionT = RetT(*)(ArgsT...);
 
 	static constexpr size_t kArgumentCount = sizeof...(ArgsT);
 	static constexpr bool kIsMemberFunction = false;
@@ -34,7 +34,8 @@ template<class RetT, class ObjT, class... ArgsT>
 struct FunctionTraits<RetT(ObjT::*)(ArgsT...)> {
 	using ReturnT = RetT;
 	using Arguments = std::tuple<ArgsT...>;
-	using Function = RetT(ObjT::*)(ArgsT...);
+	using FunctionT = RetT(ObjT::*)(ArgsT...);
+	using ObjectT = ObjT;
 
 	static constexpr size_t kArgumentCount = sizeof...(ArgsT);
 	static constexpr bool kIsMemberFunction = true;
@@ -46,7 +47,8 @@ template<class RetT, class ObjT, class... ArgsT>
 struct FunctionTraits<RetT(ObjT::*)(ArgsT...) const> {
 	using ReturnT = RetT;
 	using Arguments = std::tuple<ArgsT...>;
-	using Function = RetT(ObjT::*)(ArgsT...) const;
+	using FunctionT = RetT(ObjT::*)(ArgsT...) const;
+	using ObjectT = ObjT;
 
 	static constexpr size_t kArgumentCount = sizeof...(ArgsT);
 	static constexpr bool kIsMemberFunction = true;
@@ -61,7 +63,7 @@ private:
 public:
 	using ReturnT = typename Wrapper::ReturnT;
 	using Arguments = typename Wrapper::Arguments;
-	using Function = typename Wrapper::Function;
+	using FunctionT = typename Wrapper::FunctionT;
 
 	static constexpr size_t kArgumentCount = Wrapper::kArgumentCount;
 	static constexpr bool kIsMemberFunction = Wrapper::kIsMemberFunction;

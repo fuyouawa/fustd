@@ -117,7 +117,7 @@ private:
 	char tag_;
 	union {
 		Ok<T> ok_;
-		Err<T> err_;
+		Err<E> err_;
 	};
 };
 }
