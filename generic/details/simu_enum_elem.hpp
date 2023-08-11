@@ -11,7 +11,7 @@ public: \
 	name(name<T1>&& rvalue) : val_(std::move(rvalue.val_)) { \
 		static_assert(std::is_convertible_v<T1, T>, "T1 must be T, or it can be implicitly converted to T!"); \
 	} \
-	name(T lvalue) : val_(lvalue) { } \
+	name(T&& value) : val_(std::forward<T>(value)) { } \
 	~name() {} \
 	T val_; \
 };
