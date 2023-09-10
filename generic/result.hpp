@@ -3,9 +3,15 @@
 #include <stdexcept>
 
 namespace fustd {
+namespace details {
+struct OkTag {};
+struct ErrTag {};
+}
 
-FUSTD_SIMU_ENUM_ELEM(Ok)
-FUSTD_SIMU_ENUM_ELEM(Err)
+template<class T>
+using Ok = details::SimuEnumElem<T, details::OkTag>;
+template<class T>
+using Err = details::SimuEnumElem<T, details::ErrTag>;
 
 /**
  * @brief 抽象可恢复错误概念, Result表示可恢复错误类型, Ok表示成功, Err表示错误
