@@ -2,12 +2,7 @@
 #include <fustd/generic/details/simu_enum_elem.hpp>
 
 namespace fustd {
-namespace details {
-	struct SomeTag {};
-}
-
-template<class T>
-using Some = details::SimuEnumElem<T, details::SomeTag>;
+FUSTD_SIMU_ENUM_ELEM(Some)
 struct None {};
 
 /**
