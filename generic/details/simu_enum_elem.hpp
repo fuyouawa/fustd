@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include <type_traits>
+#include <fustd/generic/type_traits.hpp>
 
 #define FUSTD_SIMU_ENUM_ELEM(name) \
 template <class T> \
