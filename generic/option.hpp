@@ -1,8 +1,19 @@
 ﻿#pragma once
-#include <fustd/generic/details/simu_enum_elem.hpp>
+#include <type_traits>
 
 namespace fustd {
-FUSTD_SIMU_ENUM_ELEM(Some)
+template <class T>
+class Some {
+public:
+	Some(const Some&) = delete;
+	template<class T1>
+	Some(Some<T1>&& rvalue) : val_(std::move(rvalue.val_)) {
+		static_assert(std::is_convertible_v<T1, T>, "T1 must be T, or it can be implicitly converted to T!");
+	}
+	Some(T&& value) : val_(std::forward<T>(value)) { }
+	~Some() {}
+	T val_;
+};
 struct None {};
 
 /**

@@ -1,11 +1,33 @@
 ﻿#pragma once
-#include <fustd/generic/details/simu_enum_elem.hpp>
+#include <type_traits>
 #include <stdexcept>
 
 namespace fustd {
+template <class T>
+class Ok {
+public:
+	Ok(const Ok&) = delete;
+	template<class T1>
+	Ok(Ok<T1>&& rvalue) : val_(std::move(rvalue.val_)) {
+		static_assert(std::is_convertible_v<T1, T>, "T1 must be T, or it can be implicitly converted to T!");
+	}
+	Ok(T&& value) : val_(std::forward<T>(value)) { }
+	~Ok() {}
+	T val_;
+};
 
-FUSTD_SIMU_ENUM_ELEM(Ok)
-FUSTD_SIMU_ENUM_ELEM(Err)
+template <class T>
+class Err {
+public:
+	Err(const Err&) = delete;
+	template<class T1>
+	Err(Err<T1>&& rvalue) : val_(std::move(rvalue.val_)) {
+		static_assert(std::is_convertible_v<T1, T>, "T1 must be T, or it can be implicitly converted to T!");
+	}
+	Err(T&& value) : val_(std::forward<T>(value)) { }
+	~Err() {}
+	T val_;
+};
 
 /**
  * @brief 抽象可恢复错误概念, Result表示可恢复错误类型, Ok表示成功, Err表示错误
