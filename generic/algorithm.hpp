@@ -9,7 +9,7 @@ inline void TraverseVariable(const TraverseCallbackT& callback, size_t begin_idx
 
 template<size_t cur_va_idx, class TraverseCallbackT, class ThisType, class... RestTypes>
 inline void TraverseVariable(const TraverseCallbackT& callback, size_t begin_idx, size_t count, ThisType&& this_type, RestTypes&&... rest_type) {
-	if (cur_va_idx > begin_idx + count)
+	if (cur_va_idx >= begin_idx + count)
 		return;
 	if (cur_va_idx >= begin_idx)
 		callback(std::forward<ThisType>(this_type), cur_va_idx);
