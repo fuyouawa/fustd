@@ -42,6 +42,19 @@ struct nude<T*> {
 };
 }
 
+// 判断Types是否都等于CompareT, 比如is_all_same_v<int, int, int> = true;
+template<class CompareT, class... Types>
+inline constexpr bool is_all_same_v = (sizeof...(Types) != 0 && (... && std::is_same_v<CompareT, Types>));
+// 判断FromTypes是否都可转换为ToT, 比如is_all_convertible_v<int, float, long long> = true;
+template<class ToT, class... FromTypes>
+inline constexpr bool is_all_convertible_v = (sizeof...(FromTypes) != 0 && (... && std::is_convertible_v<FromTypes, ToT>));
+// 判断Types的其中一个是否是CompareT, 比如is_any_of_v<int, float, int> = true;
+template<class CompareT, class... Types>
+inline constexpr bool is_any_of_v = (sizeof...(Types) != 0 && (... || std::is_same_v<CompareT, Types>));
+// 判断FromTypes的其中一个是否可转换为ToT, 比如is_any_of_convertible_v<int, float, const char*> = true;
+template<class ToT, class... FromTypes>
+inline constexpr bool is_any_of_convertible_v = (sizeof...(FromTypes) != 0 && (... || std::is_convertible_v<FromTypes, ToT>));
+
 // 用于判断T是否能够执行OpT
 template <class T, template <class...> class OpT>
 inline constexpr bool is_detected_v = details::is_detected<T, OpT>::value;
@@ -63,10 +76,10 @@ template<class T>
 inline constexpr bool is_number_v = std::is_integral_v<T> || std::is_floating_point_v<T>;
 // 判断T是否是字符串(const char*, char*, char[], const char[])
 template<class T>
-inline constexpr bool is_charptr_v = std::_Is_any_of_v<T, const char*, char*, char[], const char[]>;
+inline constexpr bool is_charptr_v = is_any_of_v<T, const char*, char*, char[], const char[]>;
 template<class T>
 // 判断T是否是宽字符串(const wchar_t*, wchar_t*, wchar_t[], const wchar_t[])
-inline constexpr bool is_wcharptr_v = std::_Is_any_of_v<T, const wchar_t*, wchar_t*, wchar_t[], const wchar_t[]>;
+inline constexpr bool is_wcharptr_v = is_any_of_v<T, const wchar_t*, wchar_t*, wchar_t[], const wchar_t[]>;
 template<class T>
 // 判断T是否是字符串(包括宽字符串)
 inline constexpr bool is_str_v = is_charptr_v<T> || is_wcharptr_v<T>;
@@ -88,19 +101,6 @@ inline constexpr bool is_pointer_v = std::is_pointer_v<T>;
 // 判断T是否是非字符串指针
 template<class T>
 inline constexpr bool is_not_str_ptr_v = is_pointer_v<T> && !is_str_v<T>;
-
-// 判断Types是否都等于CompareT, 比如is_all_same_v<int, int, int> = true;
-template<class CompareT, class... Types>
-inline constexpr bool is_all_same_v = (sizeof...(Types) != 0 && (... && std::is_same_v<CompareT, Types>));
-// 判断FromTypes是否都可转换为ToT, 比如is_all_convertible_v<int, float, long long> = true;
-template<class ToT, class... FromTypes>
-inline constexpr bool is_all_convertible_v = (sizeof...(FromTypes) != 0 && (... && std::is_convertible_v<FromTypes, ToT>));
-// 判断Types的其中一个是否是CompareT, 比如is_any_of_v<int, float, int> = true;
-template<class CompareT, class... Types>
-inline constexpr bool is_any_of_v = (sizeof...(Types) != 0 && (... || std::is_same_v<CompareT, Types>));
-// 判断FromTypes的其中一个是否可转换为ToT, 比如is_any_of_convertible_v<int, float, const char*> = true;
-template<class ToT, class... FromTypes>
-inline constexpr bool is_any_of_convertible_v = (sizeof...(FromTypes) != 0 && (... || std::is_convertible_v<FromTypes, ToT>));
 
 // 类似is_all_same_v, 但是自动去除所有装饰, 比如is_decay_all_same_v<int, const int, int&> = true;
 template<class CompareT, class... Types>
