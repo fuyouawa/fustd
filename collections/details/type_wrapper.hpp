@@ -15,7 +15,7 @@ public:
 	};
 	struct ValueEqualTo {
 		_NODISCARD bool operator()(const TypeWrapper& x, const TypeWrapper& y) const noexcept {
-			if constexpr (has_equality_operator_v<T>)
+			if constexpr (is_equality_operable_v<T>)
 				return *x.val_ptr_ == *y.val_ptr_;
 			else
 				return x.val_ptr_ == y.val_ptr_;

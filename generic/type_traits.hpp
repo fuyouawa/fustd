@@ -7,10 +7,10 @@
 
 namespace fustd {
 namespace details {
-template <class, template <class...> class, class = void>
+template <class, template <class> class, class = void>
 struct is_detected : std::false_type {};
 
-template <class T, template <class...> class OpT>
+template <class T, template <class> class OpT>
 struct is_detected<T, OpT, std::void_t<OpT<T>>> : std::true_type {};
 
 template <class T>
@@ -56,12 +56,12 @@ template<class ToT, class... FromTypes>
 inline constexpr bool is_any_of_convertible_v = (sizeof...(FromTypes) != 0 && (... || std::is_convertible_v<FromTypes, ToT>));
 
 // 用于判断T是否能够执行OpT
-template <class T, template <class...> class OpT>
+template <class T, template <class> class OpT>
 inline constexpr bool is_detected_v = details::is_detected<T, OpT>::value;
 
 // 判断T是否重载了==运算符
 template <class T>
-inline constexpr bool has_equality_operator_v = is_detected_v<T, details::has_equality_operator_t>;
+inline constexpr bool is_equality_operable_v = is_detected_v<T, details::has_equality_operator_t>;
 
 // 如果T是可右值引用的(T是个类), 返回T&&, 否则返回T
 template <class T>
