@@ -64,7 +64,7 @@ public:
 
 	template<class U, enable_if_conv_to_t<U> = 0>
 	void EqualValue(U* val) {
-		if constexpr (has_equality_operator_v<U>)
+		if constexpr (is_equality_operable_v<U>)
 			return *dynamic_cast<U*>(val_ptr_) == *val;
 		else
 			return dynamic_cast<U*>(val_ptr_) == val;
