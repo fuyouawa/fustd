@@ -5,6 +5,7 @@
 
 #include <fustd/generic/function_traits.hpp>
 
+// 不可用于驱动使用
 #ifndef WINNT
 namespace fustd {
 namespace details {
