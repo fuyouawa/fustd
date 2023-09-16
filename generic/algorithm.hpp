@@ -16,31 +16,34 @@ inline void TraverseVariable(const TraverseCallbackT& callback, size_t begin_idx
 	TraverseVariable<cur_va_idx + 1, TraverseCallbackT, RestTypes...>(callback, begin_idx, count, std::forward<RestTypes>(rest_type)...);
 }
 
-template<class T>
-struct HighTypeT;
-template<> struct HighTypeT<uint64_t> {
-	using Type = uint32_t;
-};
-template<> struct HighTypeT<int64_t> {
-	using Type = int32_t;
-};
-template<> struct HighTypeT<uint32_t> {
-	using Type = uint16_t;
-};
-template<> struct HighTypeT<int32_t> {
-	using Type = int16_t;
-};
-template<> struct HighTypeT<uint8_t> {
-	using Type = uint8_t;
-};
-template<> struct HighTypeT<int8_t> {
-	using Type = int8_t;
-};
+template<size_t Bytes>
+constexpr int AlignBytes() {
+	static_assert(Bytes < 8, "Bytes must be less than 8!");
+	static_assert(Bytes != 0, "Bytes must be greater than 0!");
+	if constexpr (Bytes <= 2)
+		return Bytes;
+	else if constexpr (Bytes <= 4)
+		return 4;
+	else return 8;
+}
+template<bool IsUnsigned,size_t Bytes>
+struct BytesToType;
+template<> struct BytesToType<true,  1>	{ using Type = uint8_t;	 };
+template<> struct BytesToType<false, 1> { using Type = int8_t;	 };
+template<> struct BytesToType<true,  2>	{ using Type = uint16_t; };
+template<> struct BytesToType<false, 2> { using Type = int16_t;	 };
+template<> struct BytesToType<true,  4>	{ using Type = uint32_t; };
+template<> struct BytesToType<false, 4> { using Type = int32_t;	 };
+template<> struct BytesToType<true,  8>	{ using Type = uint64_t; };
+template<> struct BytesToType<false, 8> { using Type = int64_t;	 };
+template<size_t Bytes, class T>
+using BytesToTypeT = typename details::BytesToType<std::is_unsigned_v<T>, details::AlignBytes<Bytes>()>::Type;
 }
 
-template<class T, std::enable_if_t<std::is_integral_v<T>, int> = 0>
-void SetIntegerHigh(T& target, typename details::HighTypeT<T>::Type value) {
-	((decltype(value)*)&target)[1] = value;
+template<size_t Bytes, class T, std::enable_if_t<std::is_integral_v<T> && Bytes <= sizeof(T), int> = 0>
+void SetIntegerHigh(T& target, details::BytesToTypeT<Bytes, T> value) {
+	auto dest = (char*)&target + (sizeof(T) - Bytes);
+	memcpy_s(dest, Bytes, &value, Bytes);
 }
 
 
