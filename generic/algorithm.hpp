@@ -43,7 +43,7 @@ using BytesToTypeT = typename details::BytesToType<std::is_unsigned_v<T>, detail
 template<size_t Bytes, class T, std::enable_if_t<std::is_integral_v<T> && Bytes <= sizeof(T), int> = 0>
 void SetIntegerHigh(T& target, details::BytesToTypeT<Bytes, T> value) {
 	auto dest = (char*)&target + (sizeof(T) - Bytes);
-	memcpy_s(dest, Bytes, &value, Bytes);
+	memcpy(dest, &value, Bytes);
 }
 
 

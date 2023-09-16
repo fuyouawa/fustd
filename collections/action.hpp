@@ -5,6 +5,7 @@
 
 #include <fustd/generic/function_traits.hpp>
 
+#ifndef WINNT
 namespace fustd {
 namespace details {
 struct FunctionHasher {
@@ -77,3 +78,4 @@ private:
 	details::function_set<ArgsT...> func_set_;
 };
 }
+#endif // !WINNT
