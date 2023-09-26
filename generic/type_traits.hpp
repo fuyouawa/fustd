@@ -114,4 +114,7 @@ inline constexpr bool is_decay_any_of_v = (sizeof...(Types) != 0 && (... || deta
 // 类似is_any_of_convertible_v, 但是自动去除所有装饰, 比如is_decay_any_of_convertible_v<int, const float&, const char*> = true;
 template<class ToT, class... FromTypes>
 inline constexpr bool is_decay_any_of_convertible_v = (sizeof...(FromTypes) != 0 && (... || details::is_decay_convertible_v<FromTypes, ToT>));
+
+template<class T>
+concept integeral_t = std::is_integral_v<T>;
 }

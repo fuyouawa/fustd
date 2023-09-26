@@ -40,19 +40,20 @@ template<size_t Bytes, class T>
 using BytesToTypeT = typename details::BytesToType<std::is_unsigned_v<T>, details::AlignBytes<Bytes>()>::Type;
 }
 
-template<size_t Bytes, class T, std::enable_if_t<std::is_integral_v<T> && Bytes <= sizeof(T), int> = 0>
+template<size_t Bytes, integeral_t T>
+	requires (Bytes <= sizeof(T))
 void SetIntegerHigh(T& target, details::BytesToTypeT<Bytes, T> value) {
 	auto dest = (char*)&target + (sizeof(T) - Bytes);
 	memcpy(dest, &value, Bytes);
 }
 
 
-template<class T, class E, std::enable_if_t<std::is_integral_v<T> && std::is_integral_v<E>, int> = 0>
+template<integeral_t T, integeral_t E>
 constexpr T FloorDiv(T dividend, E divisor) {
 	return dividend / divisor;
 }
 
-template<class T, class E, std::enable_if_t<std::is_integral_v<T> && std::is_integral_v<E>, int> = 0>
+template<integeral_t T, integeral_t E>
 constexpr T CeilDiv(T dividend, E divisor) {
 	T res = dividend / divisor;
 	return (dividend % divisor) != 0 ? res + 1 : res;

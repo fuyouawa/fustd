@@ -43,19 +43,6 @@ struct FunctionTraits<RetT(ObjT::*)(ArgsT...)> {
 	static constexpr bool kIsCallableObject = false;
 };
 
-template<class RetT, class ObjT, class... ArgsT>
-struct FunctionTraits<RetT(ObjT::*)(ArgsT...) const> {
-	using ReturnT = RetT;
-	using Arguments = std::tuple<ArgsT...>;
-	using FunctionT = RetT(ObjT::*)(ArgsT...) const;
-	using ObjectT = ObjT;
-
-	static constexpr size_t kArgumentCount = sizeof...(ArgsT);
-	static constexpr bool kIsMemberFunction = true;
-	static constexpr bool kIsPointerToFunction = true;
-	static constexpr bool kIsCallableObject = false;
-};
-
 template<class FuncT>
 struct FunctionTraits {
 private:
@@ -69,6 +56,19 @@ public:
 	static constexpr bool kIsMemberFunction = Wrapper::kIsMemberFunction;
 	static constexpr bool kIsPointerToFunction = Wrapper::kIsPointerToFunction;
 	static constexpr bool kIsCallableObject = true;
+};
+
+template<class RetT, class ObjT, class... ArgsT>
+struct FunctionTraits<RetT(ObjT::*)(ArgsT...) const> {
+	using ReturnT = RetT;
+	using Arguments = std::tuple<ArgsT...>;
+	using FunctionT = RetT(ObjT::*)(ArgsT...) const;
+	using ObjectT = ObjT;
+
+	static constexpr size_t kArgumentCount = sizeof...(ArgsT);
+	static constexpr bool kIsMemberFunction = true;
+	static constexpr bool kIsPointerToFunction = true;
+	static constexpr bool kIsCallableObject = false;
 };
 
 template<class FuncT>

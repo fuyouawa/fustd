@@ -38,14 +38,13 @@ public:
 	};
 
 	template<class U>
-	using enable_if_conv_to_t = std::enable_if_t<std::is_convertible_v<U*, T*>, int>;
-
-	template<class U, enable_if_conv_to_t<U> = 0>
+		requires std::is_convertible_v<U*, T*>
 	static constexpr TypeWrapper FromT() {
 		return TypeWrapper((U*)0, false);
 	}
 
-	template <class U, enable_if_conv_to_t<U> = 0>
+	template <class U>
+		requires std::is_convertible_v<U*, T*>
 	constexpr TypeWrapper(U* val, bool auto_del=false) noexcept :
 		val_ptr_(val),
 		deleter_([](void* ptr) { delete static_cast<U*>(ptr); }),
@@ -57,12 +56,14 @@ public:
 			Tidy();
 	}
 
-	template<class U, enable_if_conv_to_t<U> = 0>
+	template<class U>
+		requires std::is_convertible_v<U*, T*>
 	void EqualType() {
 		return typeid(U) == *typeinfo_;
 	}
 
-	template<class U, enable_if_conv_to_t<U> = 0>
+	template<class U>
+		requires std::is_convertible_v<U*, T*>
 	void EqualValue(U* val) {
 		if constexpr (is_equality_operable_v<U>)
 			return *dynamic_cast<U*>(val_ptr_) == *val;
@@ -91,7 +92,8 @@ public:
 		deleter_ = nullptr;
 	}
 
-	template<class U, enable_if_conv_to_t<U> = 0>
+	template<class U>
+		requires std::is_convertible_v<U*, T*>
 	U* Value() const noexcept {
 		return static_cast<U*>(val_ptr_);
 	}

@@ -1,8 +1,8 @@
 ﻿#pragma once
 #include <unordered_set>
+#include <optional>
 
 #include <fustd/collections/details/type_wrapper.hpp>
-#include <fustd/generic/option.hpp>
 
 // 不可用于驱动使用
 #ifndef WINNT
@@ -53,11 +53,11 @@ public:
 	}
 
 	template<class T>
-	Option<T*> Find(T* val) const noexcept {
+	std::optional<T*> Find(T* val) const noexcept {
 		auto found = total_.find(Wrapper(val, false));
 		if (found != total_.end())
-			return Some(found->Value<T>());
-		return None;
+			return found->Value<T>();
+		return std::nullopt;
 	}
 
 private:

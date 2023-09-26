@@ -32,15 +32,14 @@ template<class... ArgsT>
 class Action
 {
 public:
-	template<class FuncT>
-	using enable_if_same_args = std::enable_if_t<is_all_same_args_func_v<FuncT, void(ArgsT...)>, int>;
-
 	Action() {}
 	template<class FuncT>
-	Action(FuncT&& func, enable_if_same_args<FuncT> = 0) {
+		requires is_all_same_args_func_v<FuncT, void(ArgsT...)>
+	Action(FuncT&& func) {
 		AddFunc(std::forward<FuncT>(func));
 	}
-	template<class FuncT, enable_if_same_args<FuncT> = 0>
+	template<class FuncT>
+		requires is_all_same_args_func_v<FuncT, void(ArgsT...)>
 	Action& operator=(FuncT&& func) {
 		func_set_.clear();
 		AddFunc(std::forward<FuncT>(func));
@@ -48,13 +47,15 @@ public:
 	}
 	~Action() {}
 
-	template<class FuncT, enable_if_same_args<FuncT> = 0>
+	template<class FuncT>
+		requires is_all_same_args_func_v<FuncT, void(ArgsT...)>
 	Action& operator+=(FuncT&& func) {
 		AddFunc(std::forward<FuncT>(func));
 		return *this;
 	}
 
-	template<class FuncT, enable_if_same_args<FuncT> = 0>
+	template<class FuncT>
+		requires is_all_same_args_func_v<FuncT, void(ArgsT...)>
 	Action& operator-=(FuncT&& func) {
 		RemoveFunc(std::forward<FuncT>(func));
 		return *this;
@@ -67,11 +68,13 @@ public:
 	}
 
 private:
-	template<class FuncT, enable_if_same_args<FuncT> = 0>
+	template<class FuncT>
+		requires is_all_same_args_func_v<FuncT, void(ArgsT...)>
 	void AddFunc(FuncT&& func) {
 		func_set_.insert(std::forward<FuncT>(func));
 	}
-	template<class FuncT, enable_if_same_args<FuncT> = 0>
+	template<class FuncT>
+		requires is_all_same_args_func_v<FuncT, void(ArgsT...)>
 	void RemoveFunc(FuncT&& func) {
 		func_set_.erase(std::forward<FuncT>(func));
 	}
