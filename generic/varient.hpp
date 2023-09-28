@@ -41,8 +41,12 @@ namespace fustd {
 		}
 
 		template<class T>
-		T& Obj() const noexcept {
+		T& obj() const noexcept {
 			return Value<T>();
+		}
+
+		void Reset(void* ptr) noexcept {
+			ptr_ = ptr;
 		}
 
 
