@@ -21,11 +21,6 @@ struct conditional_rvalue_ref {
 template <class T>
 using has_equality_operator_t = decltype(std::declval<T>() == std::declval<T>());
 
-template<class T, class U>
-static constexpr bool is_decay_same_v = std::is_same_v<std::decay_t<T>, std::decay_t<U>>;
-template<class T, class U>
-static constexpr bool is_decay_convertible_v = std::is_convertible_v<std::decay_t<T>, std::decay_t<U>>;
-
 template<class T>
 struct nude {
 	using type = std::decay_t<T>;
@@ -41,6 +36,11 @@ struct nude<T*> {
 	using type = typename nude<T>::type;
 };
 }
+
+template<class T, class U>
+static constexpr bool is_decay_same_v = std::is_same_v<std::decay_t<T>, std::decay_t<U>>;
+template<class T, class U>
+static constexpr bool is_decay_convertible_v = std::is_convertible_v<std::decay_t<T>, std::decay_t<U>>;
 
 // 判断Types是否都等于CompareT, 比如is_all_same_v<int, int, int> = true;
 template<class CompareT, class... Types>
@@ -104,16 +104,16 @@ inline constexpr bool is_not_str_ptr_v = is_pointer_v<T> && !is_str_v<T>;
 
 // 类似is_all_same_v, 但是自动去除所有装饰, 比如is_decay_all_same_v<int, const int, int&> = true;
 template<class CompareT, class... Types>
-inline constexpr bool is_decay_all_same_v = (sizeof...(Types) != 0 && (... && details::is_decay_same_v<CompareT, Types>));
+inline constexpr bool is_decay_all_same_v = (sizeof...(Types) != 0 && (... && is_decay_same_v<CompareT, Types>));
 // 类似is_all_convertible_v, 但是自动去除所有装饰, 比如is_decay_all_convertible_v<int, const float, long long&> = true;
 template<class ToT, class... FromTypes>
-inline constexpr bool is_decay_all_convertible_v = (sizeof...(FromTypes) != 0 && (... && details::is_decay_convertible_v<FromTypes, ToT>));
+inline constexpr bool is_decay_all_convertible_v = (sizeof...(FromTypes) != 0 && (... && is_decay_convertible_v<FromTypes, ToT>));
 // 类似is_any_of_v, 但是自动去除所有装饰, 比如is_decay_all_same_v<int, const int, float&> = true;
 template<class CompareT, class... Types>
-inline constexpr bool is_decay_any_of_v = (sizeof...(Types) != 0 && (... || details::is_decay_same_v<CompareT, Types>));
+inline constexpr bool is_decay_any_of_v = (sizeof...(Types) != 0 && (... || is_decay_same_v<CompareT, Types>));
 // 类似is_any_of_convertible_v, 但是自动去除所有装饰, 比如is_decay_any_of_convertible_v<int, const float&, const char*> = true;
 template<class ToT, class... FromTypes>
-inline constexpr bool is_decay_any_of_convertible_v = (sizeof...(FromTypes) != 0 && (... || details::is_decay_convertible_v<FromTypes, ToT>));
+inline constexpr bool is_decay_any_of_convertible_v = (sizeof...(FromTypes) != 0 && (... || is_decay_convertible_v<FromTypes, ToT>));
 
 template<class T>
 concept integeral_t = std::is_integral_v<T>;
