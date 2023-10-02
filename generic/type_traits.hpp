@@ -22,6 +22,12 @@ FUSTD_DETAILS_IS_DETECTED_IMPL_TEMPLATE(class T) FUSTD_DETAILS_IS_DETECTED_IMPL(
 FUSTD_DETAILS_IS_DETECTED_DECL(is_detected2, class, class);
 FUSTD_DETAILS_IS_DETECTED_IMPL_TEMPLATE(class T1, class T2) FUSTD_DETAILS_IS_DETECTED_IMPL(is_detected2, T1, T2);
 
+FUSTD_DETAILS_IS_DETECTED_DECL(is_detected3, class, class, class);
+FUSTD_DETAILS_IS_DETECTED_IMPL_TEMPLATE(class T1, class T2, class T3) FUSTD_DETAILS_IS_DETECTED_IMPL(is_detected3, T1, T2, T3);
+
+FUSTD_DETAILS_IS_DETECTED_DECL(is_detected4, class, class, class, class);
+FUSTD_DETAILS_IS_DETECTED_IMPL_TEMPLATE(class T1, class T2, class T3, class T4) FUSTD_DETAILS_IS_DETECTED_IMPL(is_detected4, T1, T2, T3, T4);
+
 template <class T>
 struct conditional_rvalue_ref {
 	using type = typename std::conditional<std::is_class<T>::value, T&&, T>::type;
@@ -50,6 +56,8 @@ constexpr bool name##_v = details::name<OpT, __VA_ARGS__>::value
 
 FUSTD_IS_DETECTED_V_TEMPLATE(class T) FUSTD_IS_DETECTED_V(is_detected, T);
 FUSTD_IS_DETECTED_V_TEMPLATE(class T1, class T2) FUSTD_IS_DETECTED_V(is_detected2, T1, T2);
+FUSTD_IS_DETECTED_V_TEMPLATE(class T1, class T2, class T3) FUSTD_IS_DETECTED_V(is_detected3, T1, T2, T3);
+FUSTD_IS_DETECTED_V_TEMPLATE(class T1, class T2, class T3, class T4) FUSTD_IS_DETECTED_V(is_detected4, T1, T2, T3, T4);
 
 template<class T, class U>
 static constexpr bool is_decay_same_v = std::is_same_v<std::decay_t<T>, std::decay_t<U>>;
