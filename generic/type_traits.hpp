@@ -7,11 +7,20 @@
 
 namespace fustd {
 namespace details {
-template <template <class...> class, class = void, class...>
-struct is_detected : std::false_type {};
+#define FUSTD_DETAILS_IS_DETECTED_DECL(name, ...) \
+template<template<__VA_ARGS__> class, __VA_ARGS__, class = void> \
+struct name : std::false_type {}
 
-template <template <class...> class OpT, class... ArgsT>
-struct is_detected<OpT, std::void_t<OpT<ArgsT...>>, ArgsT...> : std::true_type {};
+#define FUSTD_DETAILS_IS_DETECTED_IMPL_TEMPLATE(...) \
+template<template<__VA_ARGS__> class OpT, __VA_ARGS__>
+#define FUSTD_DETAILS_IS_DETECTED_IMPL(name, ...) \
+struct name<OpT, __VA_ARGS__, std::void_t<OpT<__VA_ARGS__>>> : std::true_type {}
+
+FUSTD_DETAILS_IS_DETECTED_DECL(is_detected, class);
+FUSTD_DETAILS_IS_DETECTED_IMPL_TEMPLATE(class T) FUSTD_DETAILS_IS_DETECTED_IMPL(is_detected, T);
+
+FUSTD_DETAILS_IS_DETECTED_DECL(is_detected2, class, class);
+FUSTD_DETAILS_IS_DETECTED_IMPL_TEMPLATE(class T1, class T2) FUSTD_DETAILS_IS_DETECTED_IMPL(is_detected2, T1, T2);
 
 template <class T>
 struct conditional_rvalue_ref {
@@ -34,6 +43,14 @@ struct nude<T*> {
 };
 }
 
+#define FUSTD_IS_DETECTED_V_TEMPLATE(...) \
+template<template<__VA_ARGS__> class OpT, __VA_ARGS__>
+#define FUSTD_IS_DETECTED_V(name, ...) \
+constexpr bool name##_v = details::name<OpT, __VA_ARGS__>::value
+
+FUSTD_IS_DETECTED_V_TEMPLATE(class T) FUSTD_IS_DETECTED_V(is_detected, T);
+FUSTD_IS_DETECTED_V_TEMPLATE(class T1, class T2) FUSTD_IS_DETECTED_V(is_detected2, T1, T2);
+
 template<class T, class U>
 static constexpr bool is_decay_same_v = std::is_same_v<std::decay_t<T>, std::decay_t<U>>;
 template<class T, class U>
@@ -51,10 +68,6 @@ inline constexpr bool is_any_of_v = (sizeof...(Types) != 0 && (... || std::is_sa
 // 判断FromTypes的其中一个是否可转换为ToT, 比如is_any_of_convertible_v<int, float, const char*> = true;
 template<class ToT, class... FromTypes>
 inline constexpr bool is_any_of_convertible_v = (sizeof...(FromTypes) != 0 && (... || std::is_convertible_v<FromTypes, ToT>));
-
-// 用于判断T是否能够执行OpT
-template <template <class...> class OpT, class... ArgsT>
-inline constexpr bool is_detected_v = details::is_detected<OpT, ArgsT...>::value;
 
 // 如果T是可右值引用的(T是个类), 返回T&&, 否则返回T
 template <class T>
