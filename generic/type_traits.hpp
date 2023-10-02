@@ -7,19 +7,16 @@
 
 namespace fustd {
 namespace details {
-template <class, template <class> class, class = void>
+template <template <class...> class, class = void, class...>
 struct is_detected : std::false_type {};
 
-template <class T, template <class> class OpT>
-struct is_detected<T, OpT, std::void_t<OpT<T>>> : std::true_type {};
+template <template <class...> class OpT, class... ArgsT>
+struct is_detected<OpT, std::void_t<OpT<ArgsT...>>, ArgsT...> : std::true_type {};
 
 template <class T>
 struct conditional_rvalue_ref {
 	using type = typename std::conditional<std::is_class<T>::value, T&&, T>::type;
 };
-
-template <class T>
-using has_equality_operator_t = decltype(std::declval<T>() == std::declval<T>());
 
 template<class T>
 struct nude {
@@ -56,12 +53,8 @@ template<class ToT, class... FromTypes>
 inline constexpr bool is_any_of_convertible_v = (sizeof...(FromTypes) != 0 && (... || std::is_convertible_v<FromTypes, ToT>));
 
 // 用于判断T是否能够执行OpT
-template <class T, template <class> class OpT>
-inline constexpr bool is_detected_v = details::is_detected<T, OpT>::value;
-
-// 判断T是否重载了==运算符
-template <class T>
-inline constexpr bool is_equality_operable_v = is_detected_v<T, details::has_equality_operator_t>;
+template <template <class...> class OpT, class... ArgsT>
+inline constexpr bool is_detected_v = details::is_detected<OpT, ArgsT...>::value;
 
 // 如果T是可右值引用的(T是个类), 返回T&&, 否则返回T
 template <class T>
