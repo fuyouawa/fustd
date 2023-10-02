@@ -69,7 +69,9 @@ constexpr bool is_same_template() {
 	if constexpr (ExtractTemplate<T>::IsTemplate != ExtractTemplate<U>::IsTemplate) {
 		return false;
 	}
-	return std::is_same_v<typename ExtractTemplate<T>::Type, typename ExtractTemplate<U>::Type>;
+	else {
+		return std::is_same_v<typename ExtractTemplate<T>::Type, typename ExtractTemplate<U>::Type>;
+	}
 }
 }
 
