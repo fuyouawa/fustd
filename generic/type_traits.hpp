@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <type_traits>
+#include <tuple>
 
 #define ALL_INTEGRAL_TYPES bool, char, signed char, unsigned char, wchar_t, char16_t, char32_t, short, unsigned short, int, unsigned int, long, unsigned long, long long, unsigned long long
 
@@ -38,16 +39,42 @@ struct nude {
 	using type = std::decay_t<T>;
 };
 
-template<typename T>
+template<class T>
 struct nude<T[]> {
 	using type = typename nude<T>::type;
 };
 
-template<typename T>
+template<class T>
 struct nude<T*> {
 	using type = typename nude<T>::type;
 };
+
+
+template <template <class...> class T>
+struct TemplateType {};
+
+template <class T>
+struct ExtractTemplate {
+	static constexpr bool IsTemplate = false;
+};
+
+template <template <class...> class T, class... Args>
+struct ExtractTemplate<T<Args...>> {
+	static constexpr bool IsTemplate = true;
+	using Type = TemplateType<T>;
+};
+
+template <class T, class U>
+constexpr bool is_same_template() {
+	if constexpr (ExtractTemplate<T>::IsTemplate != ExtractTemplate<U>::IsTemplate) {
+		return false;
+	}
+	return std::is_same_v<typename ExtractTemplate<T>::Type, typename ExtractTemplate<U>::Type>;
 }
+}
+
+template <class T, class U>
+constexpr bool is_same_template_v = details::is_same_template<T, U>();
 
 #define FUSTD_IS_DETECTED_V_TEMPLATE(...) \
 template<template<__VA_ARGS__> class OpT, __VA_ARGS__>
