@@ -1,12 +1,14 @@
 ﻿#pragma once
 #include <type_traits>
 #include <tuple>
+#include <fustd/generic/details/def.hpp>
 
 #define ALL_INTEGRAL_TYPES bool, char, signed char, unsigned char, wchar_t, char16_t, char32_t, short, unsigned short, int, unsigned int, long, unsigned long, long long, unsigned long long
 
 #define ALL_FLOATING_POINT_TYPES float, double, long double
 
-namespace fustd {
+FUSTD_BEGIN_NAMESPACE
+
 namespace details {
 #define FUSTD_DETAILS_IS_DETECTED_DECL(name, ...) \
 template<template<__VA_ARGS__> class, __VA_ARGS__, class = void> \
@@ -28,6 +30,9 @@ FUSTD_DETAILS_IS_DETECTED_IMPL_TEMPLATE(class T1, class T2, class T3) FUSTD_DETA
 
 FUSTD_DETAILS_IS_DETECTED_DECL(is_detected4, class, class, class, class);
 FUSTD_DETAILS_IS_DETECTED_IMPL_TEMPLATE(class T1, class T2, class T3, class T4) FUSTD_DETAILS_IS_DETECTED_IMPL(is_detected4, T1, T2, T3, T4);
+
+template <class T>
+using is_equality_operable_t = decltype(std::declval<T>() == std::declval<T>());
 
 template <class T>
 struct conditional_rvalue_ref {
@@ -87,6 +92,9 @@ FUSTD_IS_DETECTED_V_TEMPLATE(class T) FUSTD_IS_DETECTED_V(is_detected, T);
 FUSTD_IS_DETECTED_V_TEMPLATE(class T1, class T2) FUSTD_IS_DETECTED_V(is_detected2, T1, T2);
 FUSTD_IS_DETECTED_V_TEMPLATE(class T1, class T2, class T3) FUSTD_IS_DETECTED_V(is_detected3, T1, T2, T3);
 FUSTD_IS_DETECTED_V_TEMPLATE(class T1, class T2, class T3, class T4) FUSTD_IS_DETECTED_V(is_detected4, T1, T2, T3, T4);
+
+template<class T>
+constexpr bool is_equality_operable_v = is_detected_v<details::is_equality_operable_t, T>;
 
 template<class T, class U>
 static constexpr bool is_decay_same_v = std::is_same_v<std::decay_t<T>, std::decay_t<U>>;
@@ -160,4 +168,5 @@ inline constexpr bool is_decay_any_of_convertible_v = (sizeof...(FromTypes) != 0
 
 template<class T>
 concept integeral_t = std::is_integral_v<T>;
-}
+
+FUSTD_END_NAMESPACE

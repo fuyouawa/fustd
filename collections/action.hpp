@@ -5,9 +5,8 @@
 
 #include <fustd/generic/function_traits.hpp>
 
-// 不可用于驱动使用
-#ifndef WINNT
-namespace fustd {
+FUSTD_BEGIN_NAMESPACE
+
 namespace details {
 struct FunctionHasher {
 	template<class... ArgsT>
@@ -81,5 +80,5 @@ private:
 
 	details::function_set<ArgsT...> func_set_;
 };
-}
-#endif // !WINNT
+
+FUSTD_END_NAMESPACE

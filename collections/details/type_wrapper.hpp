@@ -2,7 +2,8 @@
 #include <typeinfo>
 #include <fustd/generic/type_traits.hpp>
 
-namespace fustd {
+FUSTD_BEGIN_NAMESPACE
+
 namespace details {
 template<class T>
 class TypeWrapper
@@ -152,4 +153,5 @@ private:
 	const std::type_info* typeinfo_;
 };
 }
-}
+
+FUSTD_END_NAMESPACE

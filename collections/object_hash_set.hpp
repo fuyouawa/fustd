@@ -4,9 +4,8 @@
 
 #include <fustd/collections/details/type_wrapper.hpp>
 
-// 不可用于驱动使用
-#ifndef WINNT
-namespace fustd {
+FUSTD_BEGIN_NAMESPACE
+
 class ObjectHashSet
 {
 public:
@@ -63,5 +62,5 @@ public:
 private:
 	std::unordered_set<Wrapper, Wrapper::ValueHasher, Wrapper::ValueEqualTo> total_;
 };
-}
-#endif // !WINNT
+
+FUSTD_END_NAMESPACE

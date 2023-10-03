@@ -1,8 +1,10 @@
 #pragma once
 #include <stdint.h>
 #include <fustd/generic/type_traits.hpp>
+#include <fustd/generic/details/def.hpp>
 
-namespace fustd {
+FUSTD_BEGIN_NAMESPACE
+
 namespace details {
 template<size_t cur_va_idx, class TraverseCallbackT>
 inline void TraverseVariable(const TraverseCallbackT& callback, size_t begin_idx, size_t count) {}
@@ -37,7 +39,7 @@ template<> struct BytesToType<false, 4> { using Type = int32_t;	 };
 template<> struct BytesToType<true,  8>	{ using Type = uint64_t; };
 template<> struct BytesToType<false, 8> { using Type = int64_t;	 };
 template<size_t Bytes, class T>
-using BytesToTypeT = typename details::BytesToType<std::is_unsigned_v<T>, details::AlignBytes<Bytes>()>::Type;
+using BytesToTypeT = typename BytesToType<std::is_unsigned_v<T>, AlignBytes<Bytes>()>::Type;
 }
 
 template<size_t Bytes, integeral_t T>
@@ -69,5 +71,4 @@ inline void TraverseVariable(const TraverseCallbackT& callback, size_t begin_idx
 		std::forward<Types>(types)...);
 }
 
-
-}
+FUSTD_END_NAMESPACE
