@@ -6,6 +6,9 @@ FUSTD_BEGIN_NAMESPACE
 
 namespace details {
 template<class T>
+concept equality_operable = requires(T t) {t == t;};
+
+template<class T>
 class TypeWrapper
 {
 public:
@@ -16,7 +19,7 @@ public:
 	};
 	struct ValueEqualTo {
 		_NODISCARD bool operator()(const TypeWrapper& x, const TypeWrapper& y) const noexcept {
-			if constexpr (is_equality_operable_v<T>)
+			if constexpr (equality_operable<T>)
 				return *x.val_ptr_ == *y.val_ptr_;
 			else
 				return x.val_ptr_ == y.val_ptr_;
@@ -38,14 +41,12 @@ public:
 		}
 	};
 
-	template<class U>
-		requires std::is_convertible_v<U*, T*>
+	template<std::convertible_to<T> U>
 	static constexpr TypeWrapper FromT() {
 		return TypeWrapper((U*)0, false);
 	}
 
-	template <class U>
-		requires std::is_convertible_v<U*, T*>
+	template <std::convertible_to<T> U>
 	constexpr TypeWrapper(U* val, bool auto_del=false) noexcept :
 		val_ptr_(val),
 		deleter_([](void* ptr) { delete static_cast<U*>(ptr); }),
@@ -57,16 +58,14 @@ public:
 			Tidy();
 	}
 
-	template<class U>
-		requires std::is_convertible_v<U*, T*>
+	template<std::convertible_to<T> U>
 	void EqualType() {
 		return typeid(U) == *typeinfo_;
 	}
 
-	template<class U>
-		requires std::is_convertible_v<U*, T*>
+	template<std::convertible_to<T> U>
 	void EqualValue(U* val) {
-		if constexpr (is_equality_operable_v<U>)
+		if constexpr (equality_operable<U>)
 			return *dynamic_cast<U*>(val_ptr_) == *val;
 		else
 			return dynamic_cast<U*>(val_ptr_) == val;
@@ -93,8 +92,7 @@ public:
 		deleter_ = nullptr;
 	}
 
-	template<class U>
-		requires std::is_convertible_v<U*, T*>
+	template<std::convertible_to<T> U>
 	U* Value() const noexcept {
 		return static_cast<U*>(val_ptr_);
 	}

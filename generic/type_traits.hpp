@@ -10,30 +10,6 @@
 FUSTD_BEGIN_NAMESPACE
 
 namespace details {
-#define FUSTD_DETAILS_IS_DETECTED_DECL(name, ...) \
-template<template<__VA_ARGS__> class, __VA_ARGS__, class = void> \
-struct name : std::false_type {}
-
-#define FUSTD_DETAILS_IS_DETECTED_IMPL_TEMPLATE(...) \
-template<template<__VA_ARGS__> class OpT, __VA_ARGS__>
-#define FUSTD_DETAILS_IS_DETECTED_IMPL(name, ...) \
-struct name<OpT, __VA_ARGS__, std::void_t<OpT<__VA_ARGS__>>> : std::true_type {}
-
-FUSTD_DETAILS_IS_DETECTED_DECL(is_detected, class);
-FUSTD_DETAILS_IS_DETECTED_IMPL_TEMPLATE(class T) FUSTD_DETAILS_IS_DETECTED_IMPL(is_detected, T);
-
-FUSTD_DETAILS_IS_DETECTED_DECL(is_detected2, class, class);
-FUSTD_DETAILS_IS_DETECTED_IMPL_TEMPLATE(class T1, class T2) FUSTD_DETAILS_IS_DETECTED_IMPL(is_detected2, T1, T2);
-
-FUSTD_DETAILS_IS_DETECTED_DECL(is_detected3, class, class, class);
-FUSTD_DETAILS_IS_DETECTED_IMPL_TEMPLATE(class T1, class T2, class T3) FUSTD_DETAILS_IS_DETECTED_IMPL(is_detected3, T1, T2, T3);
-
-FUSTD_DETAILS_IS_DETECTED_DECL(is_detected4, class, class, class, class);
-FUSTD_DETAILS_IS_DETECTED_IMPL_TEMPLATE(class T1, class T2, class T3, class T4) FUSTD_DETAILS_IS_DETECTED_IMPL(is_detected4, T1, T2, T3, T4);
-
-template <class T>
-using is_equality_operable_t = decltype(std::declval<T>() == std::declval<T>());
-
 template <class T>
 struct conditional_rvalue_ref {
 	using type = typename std::conditional<std::is_class<T>::value, T&&, T>::type;
@@ -83,19 +59,6 @@ constexpr bool is_same_template() {
 template <class T, class U>
 constexpr bool is_same_template_v = details::is_same_template<T, U>();
 
-#define FUSTD_IS_DETECTED_V_TEMPLATE(...) \
-template<template<__VA_ARGS__> class OpT, __VA_ARGS__>
-#define FUSTD_IS_DETECTED_V(name, ...) \
-constexpr bool name##_v = details::name<OpT, __VA_ARGS__>::value
-
-FUSTD_IS_DETECTED_V_TEMPLATE(class T) FUSTD_IS_DETECTED_V(is_detected, T);
-FUSTD_IS_DETECTED_V_TEMPLATE(class T1, class T2) FUSTD_IS_DETECTED_V(is_detected2, T1, T2);
-FUSTD_IS_DETECTED_V_TEMPLATE(class T1, class T2, class T3) FUSTD_IS_DETECTED_V(is_detected3, T1, T2, T3);
-FUSTD_IS_DETECTED_V_TEMPLATE(class T1, class T2, class T3, class T4) FUSTD_IS_DETECTED_V(is_detected4, T1, T2, T3, T4);
-
-template<class T>
-constexpr bool is_equality_operable_v = is_detected_v<details::is_equality_operable_t, T>;
-
 template<class T, class U>
 static constexpr bool is_decay_same_v = std::is_same_v<std::decay_t<T>, std::decay_t<U>>;
 template<class T, class U>
@@ -122,9 +85,6 @@ using conditional_rvalue_ref_t = typename details::conditional_rvalue_ref<T>::ty
 template<typename T>
 using nude_t = typename details::nude<T>::type;
 
-// 判断T是否是数字类型(包括浮点数)
-template<class T>
-inline constexpr bool is_number_v = std::is_integral_v<T> || std::is_floating_point_v<T>;
 // 判断T是否是字符串(const char*, char*, char[], const char[])
 template<class T>
 inline constexpr bool is_charptr_v = is_any_of_v<T, const char*, char*, char[], const char[]>;
@@ -134,12 +94,9 @@ inline constexpr bool is_wcharptr_v = is_any_of_v<T, const wchar_t*, wchar_t*, w
 template<class T>
 // 判断T是否是字符串(包括宽字符串)
 inline constexpr bool is_str_v = is_charptr_v<T> || is_wcharptr_v<T>;
-// 判断T是否是nullptr
-template<class T>
-inline constexpr bool is_nullptr_v = std::is_same_v<T, std::nullptr_t>;
 // 判断T是否是结构体(如果一个struct有了类的行为, 比如成员函数, 是不算结构体的!!!)
 template<class T>
-inline constexpr bool is_struct_v = std::is_pod_v<T> && !is_number_v<T> && !std::is_pointer_v<T> && !std::is_array_v<T> && !is_nullptr_v<T>;
+inline constexpr bool is_struct_v = std::is_pod_v<T> && !std::is_arithmetic_v<T> && !std::is_pointer_v<T> && !std::is_array_v<T> && !std::is_null_pointer_v<T> && !std::is_enum_v<T>;
 // 判断T是否是类(包括有了类行为的struct)
 template<class T>
 inline constexpr bool is_class_v = !std::is_pod_v<T>;
