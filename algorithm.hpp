@@ -1,10 +1,9 @@
 #pragma once
 #include <stdint.h>
-#include <fustd/generic/type_traits.hpp>
-#include <fustd/generic/details/def.hpp>
+#include <type_traits>
+#include <concepts>
 
-FUSTD_BEGIN_NAMESPACE
-
+namespace fustd {
 namespace details {
 template<size_t cur_va_idx, class TraverseCallback>
 inline void TraverseVariable(const TraverseCallback& callback, size_t begin_idx, size_t count) {}
@@ -70,5 +69,4 @@ inline void TraverseVariable(const TraverseCallback& callback, size_t begin_idx,
 		count,
 		std::forward<Types>(types)...);
 }
-
-FUSTD_END_NAMESPACE
+}

@@ -1,21 +1,14 @@
 ﻿#pragma once
 #include <type_traits>
 #include <tuple>
-#include <fustd/generic/details/def.hpp>
 #include <concepts>
 
 #define ALL_INTEGRAL_TYPES bool, char, signed char, unsigned char, wchar_t, char16_t, char32_t, short, unsigned short, int, unsigned int, long, unsigned long, long long, unsigned long long
 
 #define ALL_FLOATING_POINT_TYPES float, double, long double
 
-FUSTD_BEGIN_NAMESPACE
-
+namespace fustd {
 namespace details {
-template <class T>
-struct conditional_rvalue_ref {
-	using type = typename std::conditional<std::is_class<T>::value, T&&, T>::type;
-};
-
 template<class T>
 struct nude {
 	using type = std::decay_t<T>;
@@ -37,18 +30,18 @@ struct TemplateType {};
 
 template <class T>
 struct ExtractTemplate {
-	static constexpr bool IsTemplate = false;
+	static constexpr bool kIsTemplate = false;
 };
 
 template <template <class...> class T, class... ArgsType>
 struct ExtractTemplate<T<ArgsType...>> {
-	static constexpr bool IsTemplate = true;
+	static constexpr bool kIsTemplate = true;
 	using Type = TemplateType<T>;
 };
 
 template <class T, class U>
 constexpr bool is_same_template() {
-	if constexpr (ExtractTemplate<T>::IsTemplate != ExtractTemplate<U>::IsTemplate) {
+	if constexpr (ExtractTemplate<T>::kIsTemplate != ExtractTemplate<U>::kIsTemplate) {
 		return false;
 	}
 	else {
@@ -80,7 +73,7 @@ inline constexpr bool is_any_of_convertible_v = (sizeof...(Froms) != 0 && (... |
 
 // 如果T是可右值引用的(T是个类), 返回T&&, 否则返回T
 template <class T>
-using conditional_rvalue_ref_t = typename details::conditional_rvalue_ref<T>::type;
+using conditional_rvalue_ref_t = std::conditional_t<std::is_class_v<T>, T&&, T>;
 
 // 完全去除T的所有装饰, 比如fustd::nude_t<const volatile int*[]> = int
 template<typename T>
@@ -123,5 +116,4 @@ inline constexpr bool is_decay_any_of_v = (sizeof...(Types) != 0 && (... || is_d
 // 类似is_any_of_convertible_v, 但是自动去除所有装饰, 比如is_decay_any_of_convertible_v<int, const float&, const char*> = true;
 template<class To, class... Froms>
 inline constexpr bool is_decay_any_of_convertible_v = (sizeof...(Froms) != 0 && (... || is_decay_convertible_v<Froms, To>));
-
-FUSTD_END_NAMESPACE
+}

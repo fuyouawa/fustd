@@ -1,9 +1,7 @@
 #pragma once
 #include <tuple>
-#include "fustd/generic/algorithm.hpp"
 
-FUSTD_BEGIN_NAMESPACE
-
+namespace fustd {
 template<class FuncType>
 struct FunctionTraits;
 
@@ -98,5 +96,4 @@ inline constexpr bool is_all_same_args_func_v = EqualFunctionsArguments<FuncType
 
 template<class... FuncTypes>
 inline constexpr bool is_all_same_rett_func_v = EqualFunctionsReturnType<FuncTypes...>();
-
-FUSTD_END_NAMESPACE
+}

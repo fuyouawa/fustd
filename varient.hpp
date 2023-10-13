@@ -1,9 +1,7 @@
 #pragma once
 #include <stdint.h>
-#include <fustd/generic/details/def.hpp>
 
-FUSTD_BEGIN_NAMESPACE
-
+namespace fustd {
 class Varient
 {
 public:
@@ -60,5 +58,4 @@ private:
 
 	void* ptr_;
 };
-
-FUSTD_END_NAMESPACE
+}
