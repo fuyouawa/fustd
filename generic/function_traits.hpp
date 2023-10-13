@@ -4,55 +4,55 @@
 
 FUSTD_BEGIN_NAMESPACE
 
-template<class FuncT>
+template<class FuncType>
 struct FunctionTraits;
 
-template<class RetT, class... ArgsT>
-struct FunctionTraits<RetT(ArgsT...)> {
-	using ReturnT = RetT;
-	using Arguments = std::tuple<ArgsT...>;
-	using FunctionT = RetT(*)(ArgsT...);
+template<class RetType, class... ArgsType>
+struct FunctionTraits<RetType(ArgsType...)> {
+	using Return = RetType;
+	using Arguments = std::tuple<ArgsType...>;
+	using Function = RetType(*)(ArgsType...);
 
-	static constexpr size_t kArgumentCount = sizeof...(ArgsT);
+	static constexpr size_t kArgumentCount = sizeof...(ArgsType);
 	static constexpr bool kIsMemberFunction = false;
 	static constexpr bool kIsPointerToFunction = false;
 	static constexpr bool kIsCallableObject = false;
 };
 
 
-template<class RetT, class... ArgsT>
-struct FunctionTraits<RetT(*)(ArgsT...)> {
-	using ReturnT = RetT;
-	using Arguments = std::tuple<ArgsT...>;
-	using FunctionT = RetT(*)(ArgsT...);
+template<class RetType, class... ArgsType>
+struct FunctionTraits<RetType(*)(ArgsType...)> {
+	using Return = RetType;
+	using Arguments = std::tuple<ArgsType...>;
+	using Function = RetType(*)(ArgsType...);
 
-	static constexpr size_t kArgumentCount = sizeof...(ArgsT);
+	static constexpr size_t kArgumentCount = sizeof...(ArgsType);
 	static constexpr bool kIsMemberFunction = false;
 	static constexpr bool kIsPointerToFunction = true;
 	static constexpr bool kIsCallableObject = false;
 };
 
-template<class RetT, class ObjT, class... ArgsT>
-struct FunctionTraits<RetT(ObjT::*)(ArgsT...)> {
-	using ReturnT = RetT;
-	using Arguments = std::tuple<ArgsT...>;
-	using FunctionT = RetT(ObjT::*)(ArgsT...);
-	using ObjectT = ObjT;
+template<class RetType, class ObjType, class... ArgsType>
+struct FunctionTraits<RetType(ObjType::*)(ArgsType...)> {
+	using Return = RetType;
+	using Arguments = std::tuple<ArgsType...>;
+	using Function = RetType(ObjType::*)(ArgsType...);
+	using ObjectT = ObjType;
 
-	static constexpr size_t kArgumentCount = sizeof...(ArgsT);
+	static constexpr size_t kArgumentCount = sizeof...(ArgsType);
 	static constexpr bool kIsMemberFunction = true;
 	static constexpr bool kIsPointerToFunction = true;
 	static constexpr bool kIsCallableObject = false;
 };
 
-template<class FuncT>
+template<class FuncType>
 struct FunctionTraits {
 private:
-	using Wrapper = FunctionTraits<decltype(&FuncT::operator())>;
+	using Wrapper = FunctionTraits<decltype(&FuncType::operator())>;
 public:
-	using ReturnT = typename Wrapper::ReturnT;
+	using Return = typename Wrapper::Return;
 	using Arguments = typename Wrapper::Arguments;
-	using FunctionT = typename Wrapper::FunctionT;
+	using Function = typename Wrapper::Function;
 
 	static constexpr size_t kArgumentCount = Wrapper::kArgumentCount;
 	static constexpr bool kIsMemberFunction = Wrapper::kIsMemberFunction;
@@ -60,24 +60,24 @@ public:
 	static constexpr bool kIsCallableObject = true;
 };
 
-template<class RetT, class ObjT, class... ArgsT>
-struct FunctionTraits<RetT(ObjT::*)(ArgsT...) const> {
-	using ReturnT = RetT;
-	using Arguments = std::tuple<ArgsT...>;
-	using FunctionT = RetT(ObjT::*)(ArgsT...) const;
-	using ObjectT = ObjT;
+template<class RetType, class ObjType, class... ArgsType>
+struct FunctionTraits<RetType(ObjType::*)(ArgsType...) const> {
+	using Return = RetType;
+	using Arguments = std::tuple<ArgsType...>;
+	using Function = RetType(ObjType::*)(ArgsType...) const;
+	using ObjectT = ObjType;
 
-	static constexpr size_t kArgumentCount = sizeof...(ArgsT);
+	static constexpr size_t kArgumentCount = sizeof...(ArgsType);
 	static constexpr bool kIsMemberFunction = true;
 	static constexpr bool kIsPointerToFunction = true;
 	static constexpr bool kIsCallableObject = false;
 };
 
-template<class FuncT>
-struct FunctionTraits<FuncT&> : public FunctionTraits<FuncT> {};
+template<class FuncType>
+struct FunctionTraits<FuncType&> : public FunctionTraits<FuncType> {};
 
-template<class FuncT>
-struct FunctionTraits<FuncT&&> : public FunctionTraits<FuncT> {};
+template<class FuncType>
+struct FunctionTraits<FuncType&&> : public FunctionTraits<FuncType> {};
 
 template<class... FuncTypes>
 inline constexpr bool EqualFunctionsArguments() {
@@ -89,8 +89,8 @@ inline constexpr bool EqualFunctionsArguments() {
 template<class... FuncTypes>
 inline constexpr bool EqualFunctionsReturnType() {
 	static_assert(sizeof...(FuncTypes) >= 2, "The number of comparison function types must be greater than or equal to 2!");
-	using FirstFuncRetT = typename FunctionTraits<std::tuple_element_t<0, std::tuple<FuncTypes...>>>::ReturnT;
-	return (std::is_same_v<FirstFuncRetT, typename FunctionTraits<FuncTypes>::ReturnT> && ...);
+	using FirstFuncRetT = typename FunctionTraits<std::tuple_element_t<0, std::tuple<FuncTypes...>>>::Return;
+	return (std::is_same_v<FirstFuncRetT, typename FunctionTraits<FuncTypes>::Return> && ...);
 }
 
 template<class... FuncTypes>

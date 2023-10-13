@@ -2,6 +2,7 @@
 #include <type_traits>
 #include <tuple>
 #include <fustd/generic/details/def.hpp>
+#include <concepts>
 
 #define ALL_INTEGRAL_TYPES bool, char, signed char, unsigned char, wchar_t, char16_t, char32_t, short, unsigned short, int, unsigned int, long, unsigned long, long long, unsigned long long
 
@@ -39,8 +40,8 @@ struct ExtractTemplate {
 	static constexpr bool IsTemplate = false;
 };
 
-template <template <class...> class T, class... Args>
-struct ExtractTemplate<T<Args...>> {
+template <template <class...> class T, class... ArgsType>
+struct ExtractTemplate<T<ArgsType...>> {
 	static constexpr bool IsTemplate = true;
 	using Type = TemplateType<T>;
 };
@@ -65,17 +66,17 @@ template<class T, class U>
 static constexpr bool is_decay_convertible_v = std::is_convertible_v<std::decay_t<T>, std::decay_t<U>>;
 
 // 判断Types是否都等于CompareT, 比如is_all_same_v<int, int, int> = true;
-template<class CompareT, class... Types>
-inline constexpr bool is_all_same_v = (sizeof...(Types) != 0 && (... && std::is_same_v<CompareT, Types>));
+template<class Compare, class... Types>
+inline constexpr bool is_all_same_v = (sizeof...(Types) != 0 && (... && std::is_same_v<Compare, Types>));
 // 判断FromTypes是否都可转换为ToT, 比如is_all_convertible_v<int, float, long long> = true;
-template<class ToT, class... FromTypes>
-inline constexpr bool is_all_convertible_v = (sizeof...(FromTypes) != 0 && (... && std::is_convertible_v<FromTypes, ToT>));
+template<class To, class... Froms>
+inline constexpr bool is_all_convertible_v = (sizeof...(Froms) != 0 && (... && std::is_convertible_v<Froms, To>));
 // 判断Types的其中一个是否是CompareT, 比如is_any_of_v<int, float, int> = true;
-template<class CompareT, class... Types>
-inline constexpr bool is_any_of_v = (sizeof...(Types) != 0 && (... || std::is_same_v<CompareT, Types>));
+template<class Compare, class... Types>
+inline constexpr bool is_any_of_v = (sizeof...(Types) != 0 && (... || std::is_same_v<Compare, Types>));
 // 判断FromTypes的其中一个是否可转换为ToT, 比如is_any_of_convertible_v<int, float, const char*> = true;
-template<class ToT, class... FromTypes>
-inline constexpr bool is_any_of_convertible_v = (sizeof...(FromTypes) != 0 && (... || std::is_convertible_v<FromTypes, ToT>));
+template<class To, class... Froms>
+inline constexpr bool is_any_of_convertible_v = (sizeof...(Froms) != 0 && (... || std::is_convertible_v<Froms, To>));
 
 // 如果T是可右值引用的(T是个类), 返回T&&, 否则返回T
 template <class T>
@@ -111,19 +112,16 @@ template<class T>
 inline constexpr bool is_not_str_ptr_v = is_pointer_v<T> && !is_str_v<T>;
 
 // 类似is_all_same_v, 但是自动去除所有装饰, 比如is_decay_all_same_v<int, const int, int&> = true;
-template<class CompareT, class... Types>
-inline constexpr bool is_decay_all_same_v = (sizeof...(Types) != 0 && (... && is_decay_same_v<CompareT, Types>));
+template<class Compare, class... Types>
+inline constexpr bool is_decay_all_same_v = (sizeof...(Types) != 0 && (... && is_decay_same_v<Compare, Types>));
 // 类似is_all_convertible_v, 但是自动去除所有装饰, 比如is_decay_all_convertible_v<int, const float, long long&> = true;
-template<class ToT, class... FromTypes>
-inline constexpr bool is_decay_all_convertible_v = (sizeof...(FromTypes) != 0 && (... && is_decay_convertible_v<FromTypes, ToT>));
+template<class To, class... Froms>
+inline constexpr bool is_decay_all_convertible_v = (sizeof...(Froms) != 0 && (... && is_decay_convertible_v<Froms, To>));
 // 类似is_any_of_v, 但是自动去除所有装饰, 比如is_decay_all_same_v<int, const int, float&> = true;
-template<class CompareT, class... Types>
-inline constexpr bool is_decay_any_of_v = (sizeof...(Types) != 0 && (... || is_decay_same_v<CompareT, Types>));
+template<class Compare, class... Types>
+inline constexpr bool is_decay_any_of_v = (sizeof...(Types) != 0 && (... || is_decay_same_v<Compare, Types>));
 // 类似is_any_of_convertible_v, 但是自动去除所有装饰, 比如is_decay_any_of_convertible_v<int, const float&, const char*> = true;
-template<class ToT, class... FromTypes>
-inline constexpr bool is_decay_any_of_convertible_v = (sizeof...(FromTypes) != 0 && (... || is_decay_convertible_v<FromTypes, ToT>));
-
-template<class T>
-concept integeral_t = std::is_integral_v<T>;
+template<class To, class... Froms>
+inline constexpr bool is_decay_any_of_convertible_v = (sizeof...(Froms) != 0 && (... || is_decay_convertible_v<Froms, To>));
 
 FUSTD_END_NAMESPACE
