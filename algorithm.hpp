@@ -5,10 +5,10 @@
 
 namespace fustd {
 namespace details {
-template<size_t cur_va_idx, class TraverseCallback>
+template<size_t cur_va_idx, typename TraverseCallback>
 inline void TraverseVariable(const TraverseCallback& callback, size_t begin_idx, size_t count) {}
 
-template<size_t cur_va_idx, class TraverseCallback, class ThisType, class... RestTypes>
+template<size_t cur_va_idx, typename TraverseCallback, typename ThisType, typename... RestTypes>
 inline void TraverseVariable(const TraverseCallback& callback, size_t begin_idx, size_t count, ThisType&& this_type, RestTypes&&... rest_type) {
 	if (cur_va_idx >= begin_idx + count)
 		return;
@@ -37,7 +37,7 @@ template<> struct BytesToType<true,  4>	{ using Type = uint32_t; };
 template<> struct BytesToType<false, 4> { using Type = int32_t;	 };
 template<> struct BytesToType<true,  8>	{ using Type = uint64_t; };
 template<> struct BytesToType<false, 8> { using Type = int64_t;	 };
-template<size_t bytes, class T>
+template<size_t bytes, typename T>
 using BytesToTypeT = typename BytesToType<std::is_unsigned_v<T>, AlignBytes<bytes>()>::Type;
 }
 
@@ -60,7 +60,7 @@ constexpr T CeilDiv(T dividend, E divisor) {
 	return (dividend % divisor) != 0 ? res + 1 : res;
 }
 
-template<class TraverseCallback, class... Types>
+template<typename TraverseCallback, typename... Types>
 inline void TraverseVariable(const TraverseCallback& callback, size_t begin_idx, size_t count, Types&&... types)
 {
 	details::TraverseVariable<0, TraverseCallback, Types...>(
