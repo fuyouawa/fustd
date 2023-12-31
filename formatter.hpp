@@ -1,5 +1,4 @@
 #pragma once
-#include <initializer_list>
 #include <format>
 #include <ranges>
 #include <regex>
