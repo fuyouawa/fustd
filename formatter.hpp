@@ -47,6 +47,6 @@ struct std::formatter<InputContainer> {
             res += std::vformat(elem_fmt, std::make_format_args(*iter)) + separator;
         }
         res += std::vformat(elem_fmt, std::make_format_args(*iter)) + end_str;
-        return std::vformat_to(std::move(ctx.out()), res, std::make_format_args());
+        return std::vformat_to(ctx.out(), res, std::make_format_args());
     }
 };
