@@ -5,18 +5,6 @@
 
 namespace fustd {
 namespace details {
-template<size_t cur_va_idx, typename TraverseCallback>
-inline void TraverseVariable(const TraverseCallback& callback, size_t begin_idx, size_t count) {}
-
-template<size_t cur_va_idx, typename TraverseCallback, typename ThisType, typename... RestTypes>
-inline void TraverseVariable(const TraverseCallback& callback, size_t begin_idx, size_t count, ThisType&& this_type, RestTypes&&... rest_type) {
-	if (cur_va_idx >= begin_idx + count)
-		return;
-	if (cur_va_idx >= begin_idx)
-		callback(std::forward<ThisType>(this_type), cur_va_idx);
-	TraverseVariable<cur_va_idx + 1, TraverseCallback, RestTypes...>(callback, begin_idx, count, std::forward<RestTypes>(rest_type)...);
-}
-
 template<size_t bytes>
 constexpr int AlignBytes() {
 	static_assert(bytes < 8, "bytes must be less than 8!");

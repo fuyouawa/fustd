@@ -5,28 +5,28 @@ namespace fustd {
 template <typename, typename, typename, typename>
 struct FunctorCall;
 
-template <int... II, typename... Args, typename Ret, typename Function>
+template <size_t... II, typename... Args, typename Ret, typename Function>
 struct FunctorCall<std::index_sequence<II...>, std::tuple<Args...>, Ret, Function> {
     static Ret Call(Function& func, void** arg) {
         return func(*reinterpret_cast<typename std::remove_reference_t<Args>*>(arg[II])...);
     }
 };
 
-template <int... II, typename... Args, typename Ret, typename... Args2, typename Ret2, typename Obj>
+template <size_t... II, typename... Args, typename Ret, typename... Args2, typename Ret2, typename Obj>
 struct FunctorCall<std::index_sequence<II...>, std::tuple<Args...>, Ret, Ret2(Obj::*)(Args2...)> {
     static Ret2 Call(Ret2(Obj::* func)(Args2...), Obj* obj, void** arg) {
         return (obj->*func)(*reinterpret_cast<typename std::remove_reference_t<Args>*>(arg[II])...);
     }
 };
 
-template <int... II, typename... Args, typename Ret, typename... Args2, typename Ret2, typename Obj>
+template <size_t... II, typename... Args, typename Ret, typename... Args2, typename Ret2, typename Obj>
 struct FunctorCall<std::index_sequence<II...>, std::tuple<Args...>, Ret, Ret2(Obj::*)(Args2...) const> {
     static Ret2 Call(Ret2(Obj::* func)(Args2...) const, Obj* obj, void** arg) {
         return (obj->*func)(*reinterpret_cast<typename std::remove_reference_t<Args>*>(arg[II])...);
     }
 };
 
-template<typename FuncType>
+template<typename Func>
 struct FunctionTraits;
 
 template<typename Ret, typename... Args>
@@ -100,10 +100,10 @@ struct FunctionTraits<Ret(Obj::*)(Args...) const> {
     }
 };
 
-template<typename FuncType>
+template<typename Func>
 struct FunctionTraits {
 private:
-    using Wrapper = FunctionTraits<decltype(&FuncType::operator())>;
+    using Wrapper = FunctionTraits<decltype(&Func::operator())>;
 public:
     using Return = typename Wrapper::Return;
     using Arguments = typename Wrapper::Arguments;
@@ -120,29 +120,46 @@ public:
     }
 };
 
-template<typename FuncType>
-struct FunctionTraits<FuncType&> : public FunctionTraits<FuncType> {};
+template<typename Func>
+struct FunctionTraits<Func&> : public FunctionTraits<Func> {};
 
-template<typename FuncType>
-struct FunctionTraits<FuncType&&> : public FunctionTraits<FuncType> {};
+template<typename Func>
+struct FunctionTraits<Func&&> : public FunctionTraits<Func> {};
 
-template<typename... FuncTypes>
-inline constexpr bool EqualFunctionsArguments() {
-	static_assert(sizeof...(FuncTypes) >= 2, "The number of comparison function types must be greater than or equal to 2!");
-	using FirstFuncArgs = typename FunctionTraits<std::tuple_element_t<0, std::tuple<FuncTypes...>>>::Arguments;
-	return (std::is_same_v<FirstFuncArgs, typename FunctionTraits<FuncTypes>::Arguments> && ...);
+namespace internal {
+template<typename... ExpectedArgs, typename... ActualArgs>
+consteval bool MatchArguments(std::tuple<ExpectedArgs...>, std::tuple<ActualArgs...>) {
+    return (... && std::is_convertible_v<ActualArgs, ExpectedArgs>);
 }
 
-template<typename... FuncTypes>
-inline constexpr bool EqualFunctionsReturnType() {
-	static_assert(sizeof...(FuncTypes) >= 2, "The number of comparison function types must be greater than or equal to 2!");
-	using FirstFuncRetT = typename FunctionTraits<std::tuple_element_t<0, std::tuple<FuncTypes...>>>::Return;
-	return (std::is_same_v<FirstFuncRetT, typename FunctionTraits<FuncTypes>::Return> && ...);
+template<typename ExpectedFunc, typename ActualFunc>
+consteval bool MatchFunctionArguments() {
+    using ExpectedSignature = FunctionTraits<ExpectedFunc>;
+    using ActualSignature = FunctionTraits<ActualFunc>;
+
+    using ExpectedArgs = typename ExpectedSignature::Arguments;
+    using ActualArgs = typename ActualSignature::Arguments;
+
+    if constexpr (ExpectedSignature::kArgumentCount == ActualSignature::kArgumentCount) {
+        return MatchArguments(ExpectedArgs{}, ActualArgs{});
+    }
+    return false;
+}
 }
 
-template<typename... FuncTypes>
-inline constexpr bool is_all_same_args_func_v = EqualFunctionsArguments<FuncTypes...>();
+template<typename ExpectedFunc, typename ActualFunc>
+// 匹配两个可调用对象的参数
+// 也就是ActualFunc的每个参数是否都可以隐式转换为ExpectedFunc对应的参数
+constexpr bool kIsArgumentsMatchableFunctions = internal::MatchFunctionArguments<ExpectedFunc, ActualFunc>();
 
-template<typename... FuncTypes>
-inline constexpr bool is_all_same_rett_func_v = EqualFunctionsReturnType<FuncTypes...>();
+template<typename ExpectedFunc, typename ActualFunc>
+// 匹配两个可调用对象的返回值
+// 也就是ActualFunc的返回类型是否可以隐式转换为ExpectedFunc的返回类型
+constexpr bool kIsReturnTypeMatchableFunctions = std::is_convertible_v<typename FunctionTraits<ExpectedFunc>::Return,
+                                                                       typename FunctionTraits<ActualFunc>::Return>;
+
+template<typename ExpectedFunc, typename ActualFunc>
+// 匹配两个可调用对象
+constexpr bool kIsMatchableFunctions = kIsArgumentsMatchableFunctions<ExpectedFunc, ActualFunc> &&
+                                       kIsReturnTypeMatchableFunctions< ExpectedFunc, ActualFunc>;
 }
