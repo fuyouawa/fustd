@@ -2,30 +2,6 @@
 #include <tuple>
 
 namespace fustd {
-template <typename, typename, typename, typename>
-struct FunctorCall;
-
-template <size_t... II, typename... Args, typename Ret, typename Function>
-struct FunctorCall<std::index_sequence<II...>, std::tuple<Args...>, Ret, Function> {
-    static Ret Call(Function& func, void** arg) {
-        return func(*reinterpret_cast<typename std::remove_reference_t<Args>*>(arg[II])...);
-    }
-};
-
-template <size_t... II, typename... Args, typename Ret, typename... Args2, typename Ret2, typename Obj>
-struct FunctorCall<std::index_sequence<II...>, std::tuple<Args...>, Ret, Ret2(Obj::*)(Args2...)> {
-    static Ret2 Call(Ret2(Obj::* func)(Args2...), Obj* obj, void** arg) {
-        return (obj->*func)(*reinterpret_cast<typename std::remove_reference_t<Args>*>(arg[II])...);
-    }
-};
-
-template <size_t... II, typename... Args, typename Ret, typename... Args2, typename Ret2, typename Obj>
-struct FunctorCall<std::index_sequence<II...>, std::tuple<Args...>, Ret, Ret2(Obj::*)(Args2...) const> {
-    static Ret2 Call(Ret2(Obj::* func)(Args2...) const, Obj* obj, void** arg) {
-        return (obj->*func)(*reinterpret_cast<typename std::remove_reference_t<Args>*>(arg[II])...);
-    }
-};
-
 template<typename Func>
 struct FunctionTraits;
 
@@ -38,11 +14,11 @@ struct FunctionTraits<Ret(Args...)> {
     static constexpr size_t kArgumentCount = sizeof...(Args);
     static constexpr bool kIsMemberFunction = false;
     static constexpr bool kIsPointerToFunction = false;
-    static constexpr bool kIsCallableObject = false;
+    static constexpr bool kIsInvokeableObject = false;
 
-    template<typename Args2, typename Ret2>
-    static Ret2 Call(Function func, void** args) {
-        return FunctorCall<typename std::make_index_sequence<kArgumentCount>, Args2, Ret2, Function>::Call(func, args);
+    template<typename Ret2 = Ret, typename... Args2>
+    static Ret2 Invoke(Function func, Args2&&... args) {
+        func(std::forward<Args2>(args)...);
     }
 };
 
@@ -56,11 +32,11 @@ struct FunctionTraits<Ret(*)(Args...)> {
     static constexpr size_t kArgumentCount = sizeof...(Args);
     static constexpr bool kIsMemberFunction = false;
     static constexpr bool kIsPointerToFunction = true;
-    static constexpr bool kIsCallableObject = false;
+    static constexpr bool kIsInvokeableObject = false;
 
-    template<typename Args2, typename Ret2>
-    static Ret2 Call(Function func, void** args) {
-        return FunctorCall<typename std::make_index_sequence<kArgumentCount>, Args2, Ret2, Function>::Call(func, args);
+    template<typename Ret2 = Ret, typename... Args2>
+    static Ret2 Invoke(Function func, Args2&&... args) {
+        func(std::forward<Args2>(args)...);
     }
 };
 
@@ -74,11 +50,11 @@ struct FunctionTraits<Ret(Obj::*)(Args...)> {
     static constexpr size_t kArgumentCount = sizeof...(Args);
     static constexpr bool kIsMemberFunction = true;
     static constexpr bool kIsPointerToFunction = true;
-    static constexpr bool kIsCallableObject = false;
+    static constexpr bool kIsInvokeableObject = false;
 
-    template<typename Args2, typename Ret2>
-    static Ret2 Call(Function func, Obj* obj, void** args) {
-        return FunctorCall<typename std::make_index_sequence<kArgumentCount>, Args2, Ret2, Function>::Call(func, obj, args);
+    template<typename Ret2 = Ret, typename... Args2>
+    static Ret2 Invoke(Function func, Obj& obj, Args2&&... args) {
+        (obj.*func)(std::forward<Args2>(args)...);
     }
 };
 
@@ -92,11 +68,11 @@ struct FunctionTraits<Ret(Obj::*)(Args...) const> {
     static constexpr size_t kArgumentCount = sizeof...(Args);
     static constexpr bool kIsMemberFunction = true;
     static constexpr bool kIsPointerToFunction = true;
-    static constexpr bool kIsCallableObject = false;
+    static constexpr bool kIsInvokeableObject = false;
 
-    template<typename Args2, typename Ret2>
-    static Ret2 Call(Function func, Obj* obj, void** args) {
-        return FunctorCall<typename std::make_index_sequence<kArgumentCount>, Args2, Ret2, Function>::Call(func, obj, args);
+    template<typename Ret2 = Ret, typename... Args2>
+    static Ret2 Invoke(Function func, const Obj& obj, Args2&&... args) {
+        (obj.*func)(std::forward<Args2>(args)...);
     }
 };
 
@@ -112,11 +88,11 @@ public:
     static constexpr size_t kArgumentCount = Wrapper::kArgumentCount;
     static constexpr bool kIsMemberFunction = Wrapper::kIsMemberFunction;
     static constexpr bool kIsPointerToFunction = Wrapper::kIsPointerToFunction;
-    static constexpr bool kIsCallableObject = true;
+    static constexpr bool kIsInvokeableObject = true;
 
-    template<typename Args2, typename Ret2>
-    static Ret2 Call(Function func, void** args) {
-        return FunctorCall<typename std::make_index_sequence<kArgumentCount>, Args2, Ret2, Function>::Call(func, args);
+    template<typename Ret2 = Ret, typename... Args2>
+    static Ret2 Invoke(Function func, Args2&&... args) {
+        func(std::forward<Args2>(args)...);
     }
 };
 
@@ -126,7 +102,6 @@ struct FunctionTraits<Func&> : public FunctionTraits<Func> {};
 template<typename Func>
 struct FunctionTraits<Func&&> : public FunctionTraits<Func> {};
 
-namespace internal {
 template<typename... ExpectedArgs, typename... ActualArgs>
 consteval bool MatchArguments(std::tuple<ExpectedArgs...>, std::tuple<ActualArgs...>) {
     return (... && std::is_convertible_v<ActualArgs, ExpectedArgs>);
@@ -145,21 +120,20 @@ consteval bool MatchFunctionArguments() {
     }
     return false;
 }
-}
 
 template<typename ExpectedFunc, typename ActualFunc>
 // 匹配两个可调用对象的参数
 // 也就是ActualFunc的每个参数是否都可以隐式转换为ExpectedFunc对应的参数
-constexpr bool kIsArgumentsMatchableFunctions = internal::MatchFunctionArguments<ExpectedFunc, ActualFunc>();
+constexpr bool kIsArgumentsMatchableFunctions = MatchFunctionArguments<ExpectedFunc, ActualFunc>();
 
 template<typename ExpectedFunc, typename ActualFunc>
 // 匹配两个可调用对象的返回值
 // 也就是ActualFunc的返回类型是否可以隐式转换为ExpectedFunc的返回类型
 constexpr bool kIsReturnTypeMatchableFunctions = std::is_convertible_v<typename FunctionTraits<ExpectedFunc>::Return,
-                                                                       typename FunctionTraits<ActualFunc>::Return>;
+    typename FunctionTraits<ActualFunc>::Return>;
 
 template<typename ExpectedFunc, typename ActualFunc>
 // 匹配两个可调用对象
-constexpr bool kIsMatchableFunctions = kIsArgumentsMatchableFunctions<ExpectedFunc, ActualFunc> &&
-                                       kIsReturnTypeMatchableFunctions< ExpectedFunc, ActualFunc>;
+constexpr bool kIsMatchableFunctions = kIsArgumentsMatchableFunctions<ExpectedFunc, ActualFunc>&&
+    kIsReturnTypeMatchableFunctions< ExpectedFunc, ActualFunc>;
 }
