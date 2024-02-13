@@ -1,6 +1,6 @@
 #pragma once
 #include <tuple>
-#include <concepts>
+#include <ranges>
 #include <cassert>
 
 namespace fustd {
@@ -79,40 +79,98 @@ struct FunctionTraits<Func&> : public FunctionTraits<Func> {};
 template<typename Func>
 struct FunctionTraits<Func&&> : public FunctionTraits<Func> {};
 
-template<typename... ExpectedArgs, typename... ActualArgs>
-consteval bool MatchArguments(std::tuple<ExpectedArgs...>, std::tuple<ActualArgs...>) {
-    return (... && std::is_convertible_v<ActualArgs, ExpectedArgs>);
+// 函数参数匹配模式
+enum class MatchModel
+{
+    kConvertible,       // 每个参数都可以对应隐式转换
+    kSame,              // 每个参数必须相同
+    kConvertibleSafety  // 如果参数是基础数据(integer, floating)类型, 那么可以隐士转换; 否则必须相同
+};
+namespace internal {
+template<typename T>
+constexpr bool kIsNumber = std::is_integral_v<T> || std::is_floating_point_v<T>;
+template<typename T>
+constexpr bool kAlwaysFalse = false;
+
+template<typename, typename, MatchModel>
+struct MatchFunctionArgumentsHelper;
+
+template<typename... ExpectArgs, typename... ActualArgs, MatchModel model>
+struct MatchFunctionArgumentsHelper<std::tuple<ExpectArgs...>, std::tuple<ActualArgs...>, model>
+{
+    consteval bool operator()() const {
+        if constexpr (sizeof...(ExpectArgs) == sizeof...(ActualArgs)) {
+            switch (model)
+            {
+            case MatchModel::kConvertible:
+                return (... && std::is_convertible_v<ActualArgs, ExpectArgs>);
+            case MatchModel::kSame:
+                return (... && std::is_same_v<ActualArgs, ExpectArgs>);
+            case MatchModel::kConvertibleSafety:
+                return (... && (kIsNumber<ExpectArgs> ? std::is_convertible_v<ActualArgs, ExpectArgs> :
+                    std::is_same_v<ActualArgs, ExpectArgs>));
+            default:
+                break;
+            }
+        }
+        return false;
+    }
+};
+template<typename ExpectedFunc, typename ActualFunc, MatchModel model>
+consteval bool MatchFunctionArguments() {
+    using ExpectedArguments = typename FunctionTraits<ExpectedFunc>::Arguments;
+    using ActualArguments = typename FunctionTraits<ActualFunc>::Arguments;
+    return internal::MatchFunctionArgumentsHelper<ExpectedArguments, ActualArguments, model>{}();
 }
 
-template<typename ExpectedFunc, typename ActualFunc>
-consteval bool MatchFunctionArguments() {
-    using ExpectedSignature = FunctionTraits<ExpectedFunc>;
-    using ActualSignature = FunctionTraits<ActualFunc>;
 
-    using ExpectedArgs = typename ExpectedSignature::Arguments;
-    using ActualArgs = typename ActualSignature::Arguments;
-
-    if constexpr (ExpectedSignature::kArgumentCount == ActualSignature::kArgumentCount) {
-        return MatchArguments(ExpectedArgs{}, ActualArgs{});
+template<typename ExpectedFunc, typename ActualFunc, MatchModel model>
+consteval bool MatchFunctionReturn() {
+    using ExpectedReturn = typename FunctionTraits<ExpectedFunc>::Return;
+    using ActualReturn = typename FunctionTraits<ActualFunc>::Return;
+    switch (model)
+    {
+    case MatchModel::kConvertible:
+        return std::is_convertible_v<ActualReturn, ExpectedReturn>;
+    case MatchModel::kSame:
+        return std::is_same_v<ActualReturn, ExpectedReturn>;
+    case MatchModel::kConvertibleSafety:
+        return kIsNumber<ExpectedReturn> ? std::is_convertible_v<ActualReturn, ExpectedReturn> :
+                                            std::is_same_v<ActualReturn, ExpectedReturn>;
+    default:
+        break;
     }
     return false;
 }
+}
 
 // 匹配两个可调用对象的参数
-// 也就是ActualFunc的每个参数是否都可以隐式转换为ExpectedFunc对应的参数
-template<typename ExpectedFunc, typename ActualFunc>
-constexpr bool kIsArgumentsMatchableFunctions = MatchFunctionArguments<ExpectedFunc, ActualFunc>();
+// Tips:
+// 比如ExpectedFunc = void(int, float, MyClass1)
+//     ActualFunc = void(double, size_t, MyClass2)
+// 那么就是int和double匹配, float和size_t匹配, MyClass1和MyClass2匹配
+// 匹配方式由model决定
+// PS: 匹配方向为From: ExpectFunc; To: ActualFunc
+template<typename ExpectedFunc, typename ActualFunc, MatchModel model = MatchModel::kConvertibleSafety>
+constexpr bool kIsArgumentsMatchableFunction = internal::MatchFunctionArguments<ExpectedFunc, ActualFunc, model>();
 
 // 匹配两个可调用对象的返回值
-// 也就是ActualFunc的返回类型是否可以隐式转换为ExpectedFunc的返回类型
-template<typename ExpectedFunc, typename ActualFunc>
-constexpr bool kIsReturnTypeMatchableFunctions = std::is_convertible_v<typename FunctionTraits<ExpectedFunc>::Return,
-    typename FunctionTraits<ActualFunc>::Return>;
+// Tips:
+// 比如ExpectedFunc = int()
+//     ActualFunc = float()
+// 那么就是int和float匹配
+// 匹配方式由model决定
+// PS: 匹配方向为From: ExpectFunc; To: ActualFunc
+template<typename ExpectedFunc, typename ActualFunc, MatchModel model = MatchModel::kConvertibleSafety>
+constexpr bool kIsReturnTypeMatchableFunction = internal::MatchFunctionReturn<ExpectedFunc, ActualFunc, model>();
 
 // 匹配两个可调用对象
-template<typename ExpectedFunc, typename ActualFunc>
-constexpr bool kIsMatchableFunctions = kIsArgumentsMatchableFunctions<ExpectedFunc, ActualFunc>&&
-    kIsReturnTypeMatchableFunctions< ExpectedFunc, ActualFunc>;
+// Tips:
+// 详情查看kIsArgumentsMatchableFunction和kIsReturnTypeMatchableFunction的注释
+// 此字段就是这两个字段结果的&&
+template<typename ExpectedFunc, typename ActualFunc, MatchModel model = MatchModel::kConvertibleSafety>
+constexpr bool kIsMatchableFunction = kIsArgumentsMatchableFunction<ExpectedFunc, ActualFunc, model> &&
+                                      kIsReturnTypeMatchableFunction< ExpectedFunc, ActualFunc, model>;
 
 
 namespace internal {
