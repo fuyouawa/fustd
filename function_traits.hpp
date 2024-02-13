@@ -15,11 +15,6 @@ struct FunctionTraits<Ret(Args...)> {
     static constexpr bool kIsMemberFunction = false;
     static constexpr bool kIsPointerToFunction = false;
     static constexpr bool kIsInvokeableObject = false;
-
-    template<typename Ret2 = Ret, typename... Args2>
-    static Ret2 Invoke(Function func, Args2&&... args) {
-        func(std::forward<Args2>(args)...);
-    }
 };
 
 
@@ -33,11 +28,6 @@ struct FunctionTraits<Ret(*)(Args...)> {
     static constexpr bool kIsMemberFunction = false;
     static constexpr bool kIsPointerToFunction = true;
     static constexpr bool kIsInvokeableObject = false;
-
-    template<typename Ret2 = Ret, typename... Args2>
-    static Ret2 Invoke(Function func, Args2&&... args) {
-        func(std::forward<Args2>(args)...);
-    }
 };
 
 template<typename Ret, typename Obj, typename... Args>
@@ -51,11 +41,6 @@ struct FunctionTraits<Ret(Obj::*)(Args...)> {
     static constexpr bool kIsMemberFunction = true;
     static constexpr bool kIsPointerToFunction = true;
     static constexpr bool kIsInvokeableObject = false;
-
-    template<typename Ret2 = Ret, typename... Args2>
-    static Ret2 Invoke(Function func, Obj& obj, Args2&&... args) {
-        (obj.*func)(std::forward<Args2>(args)...);
-    }
 };
 
 template<typename Ret, typename Obj, typename... Args>
@@ -69,11 +54,6 @@ struct FunctionTraits<Ret(Obj::*)(Args...) const> {
     static constexpr bool kIsMemberFunction = true;
     static constexpr bool kIsPointerToFunction = true;
     static constexpr bool kIsInvokeableObject = false;
-
-    template<typename Ret2 = Ret, typename... Args2>
-    static Ret2 Invoke(Function func, const Obj& obj, Args2&&... args) {
-        (obj.*func)(std::forward<Args2>(args)...);
-    }
 };
 
 template<typename Func>
@@ -89,11 +69,6 @@ public:
     static constexpr bool kIsMemberFunction = Wrapper::kIsMemberFunction;
     static constexpr bool kIsPointerToFunction = Wrapper::kIsPointerToFunction;
     static constexpr bool kIsInvokeableObject = true;
-
-    template<typename Ret2 = Ret, typename... Args2>
-    static Ret2 Invoke(Function func, Args2&&... args) {
-        func(std::forward<Args2>(args)...);
-    }
 };
 
 template<typename Func>
