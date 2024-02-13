@@ -150,7 +150,7 @@ consteval bool MatchFunctionReturn() {
 //     ActualFunc = void(double, size_t, MyClass2)
 // 那么就是int和double匹配, float和size_t匹配, MyClass1和MyClass2匹配
 // 匹配方式由model决定
-// PS: 匹配方向为From: ExpectFunc; To: ActualFunc
+// PS: 匹配方向为From: ActualFunc; To: ExpectFunc
 template<typename ExpectedFunc, typename ActualFunc, MatchModel model = MatchModel::kConvertibleSafety>
 constexpr bool kIsArgumentsMatchableFunction = internal::MatchFunctionArguments<ExpectedFunc, ActualFunc, model>();
 
@@ -160,7 +160,7 @@ constexpr bool kIsArgumentsMatchableFunction = internal::MatchFunctionArguments<
 //     ActualFunc = float()
 // 那么就是int和float匹配
 // 匹配方式由model决定
-// PS: 匹配方向为From: ExpectFunc; To: ActualFunc
+// PS: 匹配方向为From: ActualFunc; To: ExpectFunc
 template<typename ExpectedFunc, typename ActualFunc, MatchModel model = MatchModel::kConvertibleSafety>
 constexpr bool kIsReturnTypeMatchableFunction = internal::MatchFunctionReturn<ExpectedFunc, ActualFunc, model>();
 
